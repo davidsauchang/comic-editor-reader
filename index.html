@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comic Studio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="brand">🎨 Comic Studio</div>
+        
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="btnEditMode">Edit</button>
+            <button class="mode-btn" id="btnReaderMode">Reader</button>
+        </div>
+
+        <div class="panel-section">
+            <h3>Pages</h3>
+            <div class="btn-row">
+                <button class="btn btn-secondary btn-sm" id="btnAddPage">+ Page</button>
+                <button class="btn btn-secondary btn-sm" id="btnDeletePage">Delete</button>
+            </div>
+        </div>
+
+        <div class="page-list" id="pageList"></div>
+
+        <div class="panel-section">
+            <h3>Import</h3>
+            <label for="fileInput" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Add Image
+            </label>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+        </div>
+
+        <div class="panel-section" id="propertiesPanel" style="display:none;">
+            <h3>Properties</h3>
+            <div class="prop-row">
+                <label>X</label>
+                <input type="number" id="propX">
+            </div>
+            <div class="prop-row">
+                <label>Y</label>
+                <input type="number" id="propY">
+            </div>
+            <div class="prop-row">
+                <label>W</label>
+                <input type="number" id="propW">
+            </div>
+            <div class="prop-row">
+                <label>H</label>
+                <input type="number" id="propH">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary btn-sm" id="btnFront">Front</button>
+                <button class="btn btn-secondary btn-sm" id="btnBack">Back</button>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnDeletePanel" style="margin-top:8px;">Delete Panel</button>
+        </div>
+
+        <div class="panel-section">
+            <h3>Export</h3>
+            <button class="btn btn-secondary" id="btnExportHTML">Export HTML</button>
+            <button class="btn btn-secondary" id="btnExportJSON" style="margin-top:6px;">Save Project</button>
+            <label for="loadInput" class="btn btn-secondary" style="margin-top:6px;">
+                Load Project
+            </label>
+            <input type="file" id="loadInput" accept=".json">
+        </div>
+    </div>
+
+    <!-- MAIN AREA -->
+    <div class="main-area">
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <span style="font-size:0.8rem; color:#888;">Page Size:</span>
+                <select class="toolbar-btn" id="pageSizeSelect">
+                    <option value="800,1200">800 x 1200</option>
+                    <option value="1200,1800">1200 x 1800</option>
+                    <option value="1080,1920">1080 x 1920 (Mobile)</option>
+                    <option value="600,900">600 x 900 (Small)</option>
+                </select>
+            </div>
+            <div class="toolbar-group">
+                <span style="font-size:0.8rem; color:#888;">Zoom:</span>
+                <button class="toolbar-btn" data-zoom="0.5">50%</button>
+                <button class="toolbar-btn" data-zoom="0.75">75%</button>
+                <button class="toolbar-btn" data-zoom="1">100%</button>
+                <button class="toolbar-btn" data-zoom="1.5">150%</button>
+            </div>
+        </div>
+        <div class="workspace" id="workspace">
+            <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path d="M7 11h10v2H7zM7 7h10v2H7zM7 15h7v2H7z"/></svg>
+                <h3>No Pages Yet</h3>
+                <p>Click "+ Page" to start, then add images.</p>
+            </div>
+            <div class="page-canvas" id="pageCanvas" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- READER MODE -->
+    <div class="reader-view" id="readerView">
+        <div class="reader-toolbar">
+            <span id="readerTitle">Comic Reader</span>
+            <div class="toolbar-group">
+                <span id="readerCounter">1 / 1</span>
+                <button class="toolbar-btn" id="btnExitReader">Exit</button>
+            </div>
+        </div>
+        <div class="reader-stage" id="readerStage">
+            <button class="reader-nav prev" id="btnPrevPage">‹</button>
+            <div class="reader-page" id="readerPage"></div>
+            <button class="reader-nav next" id="btnNextPage">›</button>
+            <div class="reader-progress">
+                <div class="reader-progress-bar" id="readerProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CROPPER MODAL -->
+    <div class="modal-overlay" id="cropperModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Crop Image</h3>
+                <button class="modal-close" id="btnCloseCropper">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="cropperImage" src="" alt="Crop">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancelCrop">Cancel</button>
+                <button class="btn btn-primary" id="btnApplyCrop">Apply & Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
