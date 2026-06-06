@@ -117,31 +117,22 @@ function renderPages() {
         div.className = 'page-item' + (i === state.currentPage? ' active' : '');
         div.textContent = page.name;
         div.dataset.pageIndex = i;
+        div.dataset.pageId = page.id;
 
         div.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation(); // Extra safety
 
-            const clickedIndex = parseInt(e.currentTarget.dataset.pageIndex);
+            const clickedIndex = parseInt(div.dataset.pageIndex);
 
             // ONLY switch, never add
-            if (clickedIndex!== state.currentPage) {
+            if (clickedIndex !== state.currentPage) {
                 state.currentPage = clickedIndex;
                 state.selectedPanel = null;
                 renderPages();
-
-                if (state.viewMode === 'scroll') {
-                    renderScrollerView();
-                    setTimeout(() => {
-                        document.querySelector(`.scroller-page[data-page-id="${state.pages[clickedIndex].id}"]`)
-                         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 50);
-                } else {
-                    renderCanvas();
-                }
+                renderCanvas();
             }
-            return false; // Extra safety
+            return false;
         });
 
         els.pageList.appendChild(div);
