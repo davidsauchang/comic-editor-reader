@@ -1,618 +1,564 @@
-// ===================== STATE =====================
-let project = {
-    title: 'Untitled Comic',
+const state = {
     pages: [],
-    settings: { defaultWidth: 800, defaultHeight: 1200 }
+    currentPage: -1,
+    selectedPanel: null,
+    zoom: 1,
+    mode: 'edit',
+    viewMode: 'scroll',
+    readerIndex: 0,
+    pageSize: [800, 1200],
+    cropper: null
 };
-let currentPageIndex = -1;
-let selectedPanelId = null;
-let zoom = 1;
-let mode = 'edit';
-let cropper = null;
-let pendingImageSrc = null;
-let isDragging = false;
-let dragOffset = { x: 0, y: 0 };
-let isResizing = false;
-let resizeDir = '';
-let resizeStart = { x: 0, y: 0, w: 0, h: 0, px: 0, py: 0 };
 
-// ===================== DOM REFS =====================
 const els = {
     pageList: document.getElementById('pageList'),
     pageCanvas: document.getElementById('pageCanvas'),
+    workspace: document.getElementById('workspace'),
     emptyState: document.getElementById('emptyState'),
-    fileInput: document.getElementById('fileInput'),
     propertiesPanel: document.getElementById('propertiesPanel'),
-    propX: document.getElementById('propX'),
-    propY: document.getElementById('propY'),
-    propW: document.getElementById('propW'),
-    propH: document.getElementById('propH'),
     cropperModal: document.getElementById('cropperModal'),
     cropperImage: document.getElementById('cropperImage'),
     readerView: document.getElementById('readerView'),
     readerPage: document.getElementById('readerPage'),
     readerCounter: document.getElementById('readerCounter'),
-    readerProgress: document.getElementById('readerProgress'),
-    readerStage: document.getElementById('readerStage'),
-    workspace: document.getElementById('workspace'),
-    btnEditMode: document.getElementById('btnEditMode'),
-    btnReaderMode: document.getElementById('btnReaderMode'),
-    pageSizeSelect: document.getElementById('pageSizeSelect')
+    readerProgress: document.getElementById('readerProgress')
 };
 
-// ===================== INIT =====================
-function init() {
-    bindEvents();
-    loadFromStorage();
-    if (project.pages.length === 0) addPage();
-    renderPageList();
-    selectPage(0);
-}
+// Add view toggle to toolbar
+document.querySelector('.toolbar').insertAdjacentHTML('beforeend', `
+    <div class="toolbar-group">
+        <span style="font-size:0.8rem; color:#888;">View:</span>
+        <button class="toolbar-btn" id="btnSingleView">Single</button>
+        <button class="toolbar-btn active" id="btnScrollView">Scroll</button>
+    </div>
+`);
 
-function bindEvents() {
-    // Mode toggle
-    els.btnEditMode.addEventListener('click', () => setMode('edit'));
-    els.btnReaderMode.addEventListener('click', () => setMode('reader'));
-    
-    // Pages
-    document.getElementById('btnAddPage').addEventListener('click', addPage);
-    document.getElementById('btnDeletePage').addEventListener('click', deletePage);
-    
-    // Import
-    els.fileInput.addEventListener('change', onFileSelect);
-    
-    // Properties
-    els.propX.addEventListener('change', updateSelectedPanel);
-    els.propY.addEventListener('change', updateSelectedPanel);
-    els.propW.addEventListener('change', updateSelectedPanel);
-    els.propH.addEventListener('change', updateSelectedPanel);
-    document.getElementById('btnFront').addEventListener('click', bringToFront);
-    document.getElementById('btnBack').addEventListener('click', sendToBack);
-    document.getElementById('btnDeletePanel').addEventListener('click', deleteSelectedPanel);
-    
-    // Cropper
-    document.getElementById('btnCloseCropper').addEventListener('click', closeCropper);
-    document.getElementById('btnCancelCrop').addEventListener('click', closeCropper);
-    document.getElementById('btnApplyCrop').addEventListener('click', applyCrop);
-    
-    // Reader
-    document.getElementById('btnExitReader').addEventListener('click', exitReader);
-    document.getElementById('btnPrevPage').addEventListener('click', prevPage);
-    document.getElementById('btnNextPage').addEventListener('click', nextPage);
-    
-    // Toolbar
-    els.pageSizeSelect.addEventListener('change', changePageSize);
-    document.querySelectorAll('[data-zoom]').forEach(btn => {
-        btn.addEventListener('click', () => setZoom(parseFloat(btn.dataset.zoom)));
-    });
-    
-    // Export / Load
-    document.getElementById('btnExportHTML').addEventListener('click', exportHTML);
-    document.getElementById('btnExportJSON').addEventListener('click', exportJSON);
-    document.getElementById('loadInput').addEventListener('change', loadProject);
-    
-    // Keyboard
-    document.addEventListener('keydown', onKeyDown);
-}
+// Init - ONLY BIND ONCE
+document.getElementById('btnAddPage').onclick = addPage;
+document.getElementById('btnDeletePage').onclick = deletePage;
+document.getElementById('btnAddBalloon').onclick = () => addElement('balloon');
+document.getElementById('btnAddSFX').onclick = () => addElement('sfx');
+document.getElementById('fileInput').onchange = handleImageUpload;
+document.getElementById('pageSizeSelect').onchange = changePageSize;
+document.querySelectorAll('[data-zoom]').forEach(btn => {
+    btn.onclick = () => setZoom(parseFloat(btn.dataset.zoom));
+});
 
-// ===================== STORAGE =====================
-function saveToStorage() {
-    try { localStorage.setItem('comicStudioProject', JSON.stringify(project)); }
-    catch(e) { console.warn('Storage failed', e); }
-}
+document.getElementById('btnEditMode').onclick = () => setMode('edit');
+document.getElementById('btnReaderMode').onclick = () => setMode('reader');
+document.getElementById('btnExitReader').onclick = () => setMode('edit');
+document.getElementById('btnPrevPage').onclick = () => navReader(-1);
+document.getElementById('btnNextPage').onclick = () => navReader(1);
 
-function loadFromStorage() {
-    try {
-        const saved = localStorage.getItem('comicStudioProject');
-        if (saved) project = JSON.parse(saved);
-    } catch(e) { console.warn('Load failed', e); }
-}
+document.getElementById('btnSingleView').onclick = () => setViewMode('single');
+document.getElementById('btnScrollView').onclick = () => setViewMode('scroll');
 
-// ===================== PAGES =====================
+document.getElementById('btnFront').onclick = () => layerPanel('front');
+document.getElementById('btnBack').onclick = () => layerPanel('back');
+document.getElementById('btnDeletePanel').onclick = deleteSelectedPanel;
+
+['propX', 'propY', 'propW', 'propH'].forEach(id => {
+    document.getElementById(id).onchange = updatePanelProps;
+});
+
+document.getElementById('btnExportHTML').onclick = exportHTML;
+document.getElementById('btnExportJSON').onclick = exportJSON;
+document.getElementById('loadInput').onchange = loadJSON;
+
+document.getElementById('btnCloseCropper').onclick = closeCropper;
+document.getElementById('btnCancelCrop').onclick = closeCropper;
+document.getElementById('btnApplyCrop').onclick = applyCrop;
+
+// SINGLE addPage DEFINITION - DELETE THE OTHER ONE
 function addPage() {
     const page = {
-        id: 'page_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        width: project.settings.defaultWidth,
-        height: project.settings.defaultHeight,
+        id: Date.now() + Math.random(), // Extra random to prevent collision
+        name: `Page ${state.pages.length + 1}`,
+        width: state.pageSize[0],
+        height: state.pageSize[1],
         panels: [],
-        background: '#ffffff'
+        elements: []
     };
-    project.pages.push(page);
-    saveToStorage();
-    renderPageList();
-    selectPage(project.pages.length - 1);
+    state.pages.push(page);
+    state.currentPage = state.pages.length - 1;
+    state.selectedPanel = null;
+    renderPages();
+    renderCanvas();
+
+    if (state.viewMode === 'scroll') {
+        setTimeout(() => {
+            const newPageEl = document.querySelector(`.scroller-page[data-page-id="${page.id}"]`);
+            newPageEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
 }
 
 function deletePage() {
-    if (project.pages.length <= 1) {
-        alert('Cannot delete the last page.');
-        return;
-    }
-    if (!confirm('Delete this page?')) return;
-    project.pages.splice(currentPageIndex, 1);
-    saveToStorage();
-    renderPageList();
-    selectPage(Math.min(currentPageIndex, project.pages.length - 1));
-}
+    if (state.pages.length === 0) return;
 
-function selectPage(index) {
-    if (index < 0 || index >= project.pages.length) return;
-    currentPageIndex = index;
-    selectedPanelId = null;
-    updatePropertiesPanel();
-    renderPageList();
+    state.pages.splice(state.currentPage, 1);
+
+    if (state.pages.length === 0) {
+        state.currentPage = -1;
+    } else {
+        state.currentPage = Math.max(0, state.currentPage - 1);
+    }
+
+    state.selectedPanel = null;
+    renderPages();
     renderCanvas();
 }
 
-function renderPageList() {
-    els.pageList.innerHTML = '';
-    project.pages.forEach((page, idx) => {
+function renderPages() {
+    els.pageList.replaceChildren();
+
+    state.pages.forEach((page, i) => {
         const div = document.createElement('div');
-        div.className = 'page-item ' + (idx === currentPageIndex ? 'active' : '');
-        div.addEventListener('click', () => selectPage(idx));
-        
-        const thumb = page.panels[0] ? page.panels[0].src : '';
-        div.innerHTML = `
-            <div class="page-thumb">
-                ${thumb ? `<img src="${thumb}" alt="">` : (idx + 1)}
-            </div>
-            <div class="page-info">
-                <h4>Page ${idx + 1}</h4>
-                <p>${page.panels.length} panels</p>
-            </div>
-        `;
+        div.className = 'page-item' + (i === state.currentPage? ' active' : '');
+        div.textContent = page.name;
+        div.dataset.pageIndex = i;
+
+        div.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation(); // Extra safety
+
+            const clickedIndex = parseInt(e.currentTarget.dataset.pageIndex);
+
+            // ONLY switch, never add
+            if (clickedIndex!== state.currentPage) {
+                state.currentPage = clickedIndex;
+                state.selectedPanel = null;
+                renderPages();
+
+                if (state.viewMode === 'scroll') {
+                    renderScrollerView();
+                    setTimeout(() => {
+                        document.querySelector(`.scroller-page[data-page-id="${state.pages[clickedIndex].id}"]`)
+                         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 50);
+                } else {
+                    renderCanvas();
+                }
+            }
+            return false; // Extra safety
+        });
+
         els.pageList.appendChild(div);
     });
 }
 
-function changePageSize() {
-    const val = els.pageSizeSelect.value.split(',');
-    const w = parseInt(val[0]), h = parseInt(val[1]);
-    const page = project.pages[currentPageIndex];
-    if (!page) return;
-    page.width = w;
-    page.height = h;
-    saveToStorage();
-    renderCanvas();
-}
-
-// ===================== CANVAS =====================
 function renderCanvas() {
-    const page = project.pages[currentPageIndex];
-    
-    if (!page) {
-        els.pageCanvas.style.display = 'none';
+    const oldScroller = els.workspace.querySelector('.pages-scroller');
+    if (oldScroller) oldScroller.remove();
+
+    if (state.pages.length === 0) {
         els.emptyState.style.display = 'block';
-        return;
-    }
-    
-    els.emptyState.style.display = 'none';
-    els.pageCanvas.style.display = 'block';
-    els.pageCanvas.style.width = (page.width * zoom) + 'px';
-    els.pageCanvas.style.height = (page.height * zoom) + 'px';
-    els.pageCanvas.innerHTML = '';
-    els.pageCanvas.style.background = page.background;
-    
-    page.panels.forEach(panel => {
-        const el = document.createElement('div');
-        el.className = 'panel-layer' + (panel.id === selectedPanelId ? ' selected' : '');
-        el.style.left = (panel.x * zoom) + 'px';
-        el.style.top = (panel.y * zoom) + 'px';
-        el.style.width = (panel.width * zoom) + 'px';
-        el.style.height = (panel.height * zoom) + 'px';
-        el.style.zIndex = panel.zIndex || 1;
-        el.dataset.id = panel.id;
-        
-        const img = document.createElement('img');
-        img.src = panel.src;
-        img.style.objectPosition = `${panel.cropX || 50}% ${panel.cropY || 50}%`;
-        el.appendChild(img);
-        
-        ['nw','ne','sw','se'].forEach(dir => {
-            const h = document.createElement('div');
-            h.className = 'resize-handle ' + dir;
-            h.dataset.dir = dir;
-            el.appendChild(h);
-        });
-        
-        el.addEventListener('mousedown', (e) => onPanelMouseDown(e, panel.id));
-        els.pageCanvas.appendChild(el);
-    });
-    
-    els.pageCanvas.addEventListener('click', (e) => {
-        if (e.target === els.pageCanvas) {
-            selectedPanelId = null;
-            updatePropertiesPanel();
-            renderCanvas();
-        }
-    });
-}
-
-function setZoom(z) {
-    zoom = z;
-    renderCanvas();
-}
-
-// ===================== PANEL INTERACTION =====================
-function onPanelMouseDown(e, panelId) {
-    if (e.target.classList.contains('resize-handle')) {
-        startResize(e, panelId, e.target.dataset.dir);
-        return;
-    }
-    selectedPanelId = panelId;
-    updatePropertiesPanel();
-    renderCanvas();
-    
-    isDragging = true;
-    dragOffset.x = e.clientX;
-    dragOffset.y = e.clientY;
-    
-    document.addEventListener('mousemove', onPanelDrag);
-    document.addEventListener('mouseup', stopPanelDrag);
-    e.stopPropagation();
-}
-
-function onPanelDrag(e) {
-    if (!isDragging || !selectedPanelId) return;
-    const page = project.pages[currentPageIndex];
-    const panel = page.panels.find(p => p.id === selectedPanelId);
-    if (!panel) return;
-    
-    const dx = (e.clientX - dragOffset.x) / zoom;
-    const dy = (e.clientY - dragOffset.y) / zoom;
-    
-    panel.x = Math.max(0, Math.min(page.width - panel.width, panel.x + dx));
-    panel.y = Math.max(0, Math.min(page.height - panel.height, panel.y + dy));
-    
-    dragOffset.x = e.clientX;
-    dragOffset.y = e.clientY;
-    
-    updatePropertiesPanel();
-    renderCanvas();
-    saveToStorage();
-}
-
-function stopPanelDrag() {
-    isDragging = false;
-    document.removeEventListener('mousemove', onPanelDrag);
-    document.removeEventListener('mouseup', stopPanelDrag);
-}
-
-// ===================== RESIZE =====================
-function startResize(e, panelId, dir) {
-    isResizing = true;
-    resizeDir = dir;
-    selectedPanelId = panelId;
-    const page = project.pages[currentPageIndex];
-    const panel = page.panels.find(p => p.id === panelId);
-    resizeStart = {
-        x: e.clientX, y: e.clientY,
-        w: panel.width, h: panel.height,
-        px: panel.x, py: panel.y
-    };
-    document.addEventListener('mousemove', onResize);
-    document.addEventListener('mouseup', stopResize);
-    e.stopPropagation();
-    e.preventDefault();
-}
-
-function onResize(e) {
-    if (!isResizing) return;
-    const page = project.pages[currentPageIndex];
-    const panel = page.panels.find(p => p.id === selectedPanelId);
-    const dx = (e.clientX - resizeStart.x) / zoom;
-    const dy = (e.clientY - resizeStart.y) / zoom;
-    
-    if (resizeDir.includes('e')) panel.width = Math.max(50, resizeStart.w + dx);
-    if (resizeDir.includes('w')) {
-        const newW = Math.max(50, resizeStart.w - dx);
-        panel.x = resizeStart.px + resizeStart.w - newW;
-        panel.width = newW;
-    }
-    if (resizeDir.includes('s')) panel.height = Math.max(50, resizeStart.h + dy);
-    if (resizeDir.includes('n')) {
-        const newH = Math.max(50, resizeStart.h - dy);
-        panel.y = resizeStart.py + resizeStart.h - newH;
-        panel.height = newH;
-    }
-    
-    updatePropertiesPanel();
-    renderCanvas();
-    saveToStorage();
-}
-
-function stopResize() {
-    isResizing = false;
-    document.removeEventListener('mousemove', onResize);
-    document.removeEventListener('mouseup', stopResize);
-}
-
-// ===================== PROPERTIES =====================
-function updatePropertiesPanel() {
-    const page = project.pages[currentPageIndex];
-    const p = page ? page.panels.find(p => p.id === selectedPanelId) : null;
-    
-    if (!p) {
+        els.pageCanvas.style.display = 'none';
+        els.workspace.classList.remove('scroller-mode');
         els.propertiesPanel.style.display = 'none';
         return;
     }
-    els.propertiesPanel.style.display = 'block';
-    els.propX.value = Math.round(p.x);
-    els.propY.value = Math.round(p.y);
-    els.propW.value = Math.round(p.width);
-    els.propH.value = Math.round(p.height);
+
+    els.emptyState.style.display = 'none';
+
+    if (state.viewMode === 'scroll') {
+        renderScrollerView();
+    } else {
+        renderSingleView();
+    }
 }
 
-function updateSelectedPanel() {
-    const page = project.pages[currentPageIndex];
-    const p = page.panels.find(p => p.id === selectedPanelId);
-    if (!p) return;
-    p.x = parseInt(els.propX.value) || 0;
-    p.y = parseInt(els.propY.value) || 0;
-    p.width = parseInt(els.propW.value) || 100;
-    p.height = parseInt(els.propH.value) || 100;
+function renderSingleView() {
+    els.workspace.classList.remove('scroller-mode');
+    els.workspace.style.alignItems = 'center';
+    els.workspace.style.justifyContent = 'center';
+    els.pageCanvas.style.display = 'block';
+
+    const page = state.pages[state.currentPage];
+    if (!page) return;
+
+    els.pageCanvas.style.width = page.width + 'px';
+    els.pageCanvas.style.height = page.height + 'px';
+    els.pageCanvas.style.transform = `scale(${state.zoom})`;
+    els.pageCanvas.innerHTML = '';
+
+    renderPageContent(page, els.pageCanvas);
+    els.pageCanvas.onclick = () => selectPanel(null);
+}
+
+function renderScrollerView() {
+    els.workspace.classList.add('scroller-mode');
+    els.pageCanvas.style.display = 'none';
+
+    const scroller = document.createElement('div');
+    scroller.className = 'pages-scroller';
+
+    state.pages.forEach((page, idx) => {
+        const pageWrapper = document.createElement('div');
+        pageWrapper.className = 'scroller-page';
+        pageWrapper.dataset.pageId = page.id;
+        pageWrapper.dataset.pageIndex = idx;
+        pageWrapper.style.width = page.width + 'px';
+        pageWrapper.style.height = page.height + 'px';
+        pageWrapper.style.transform = `scale(${state.zoom})`;
+
+        if (idx === state.currentPage) {
+            pageWrapper.style.outline = '3px solid var(--accent)';
+        }
+
+        const label = document.createElement('div');
+        label.className = 'scroller-page-label';
+        label.textContent = page.name;
+        pageWrapper.appendChild(label);
+
+        renderPageContent(page, pageWrapper, idx);
+
+        pageWrapper.onclick = (e) => {
+            if (e.target === pageWrapper || e.target === label) {
+                e.stopPropagation();
+                state.currentPage = idx;
+                renderPages();
+                renderScrollerView();
+                selectPanel(null);
+            }
+        };
+
+        scroller.appendChild(pageWrapper);
+    });
+
+    els.workspace.appendChild(scroller);
+}
+
+function renderPageContent(page, container, pageIdx = null) {
+    page.panels.forEach((panel, idx) => {
+        const div = document.createElement('div');
+        div.className = 'comic-panel';
+        div.style.left = panel.x + 'px';
+        div.style.top = panel.y + 'px';
+        div.style.width = panel.w + 'px';
+        div.style.height = panel.h + 'px';
+        div.style.zIndex = panel.z || idx;
+
+        const img = document.createElement('img');
+        img.src = panel.src;
+        img.draggable = false;
+        div.appendChild(img);
+
+        div.onclick = (e) => {
+            e.stopPropagation();
+            if (pageIdx!== null) state.currentPage = pageIdx;
+            selectPanel(panel, div);
+        };
+
+        makeDraggable(div, panel);
+        container.appendChild(div);
+    });
+
+    page.elements.forEach(el => {
+        const div = document.createElement('div');
+        div.className = el.type === 'balloon'? 'comic-balloon' : 'comic-sfx';
+        div.style.left = el.x + 'px';
+        div.style.top = el.y + 'px';
+        div.contentEditable = true;
+        div.textContent = el.text;
+        div.onblur = () => el.text = div.textContent;
+        div.onclick = (e) => {
+            e.stopPropagation();
+            if (pageIdx!== null) state.currentPage = pageIdx;
+        };
+        makeDraggable(div, el);
+        container.appendChild(div);
+    });
+}
+
+function setViewMode(mode) {
+    state.viewMode = mode;
+    document.getElementById('btnSingleView').classList.toggle('active', mode === 'single');
+    document.getElementById('btnScrollView').classList.toggle('active', mode === 'scroll');
     renderCanvas();
-    saveToStorage();
 }
 
-function bringToFront() {
-    const page = project.pages[currentPageIndex];
-    const p = page.panels.find(p => p.id === selectedPanelId);
-    if (!p) return;
-    const maxZ = Math.max(0, ...page.panels.map(p => p.zIndex || 1));
-    p.zIndex = maxZ + 1;
+function selectPanel(panel, element) {
+    document.querySelectorAll('.comic-panel.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+
+    state.selectedPanel = panel;
+
+    if (panel && element) {
+        element.classList.add('selected');
+        els.propertiesPanel.style.display = 'block';
+        document.getElementById('propX').value = Math.round(panel.x);
+        document.getElementById('propY').value = Math.round(panel.y);
+        document.getElementById('propW').value = Math.round(panel.w);
+        document.getElementById('propH').value = Math.round(panel.h);
+    } else {
+        els.propertiesPanel.style.display = 'none';
+    }
+}
+
+function updatePanelProps() {
+    if (!state.selectedPanel) return;
+    state.selectedPanel.x = parseInt(document.getElementById('propX').value) || 0;
+    state.selectedPanel.y = parseInt(document.getElementById('propY').value) || 0;
+    state.selectedPanel.w = parseInt(document.getElementById('propW').value) || 100;
+    state.selectedPanel.h = parseInt(document.getElementById('propH').value) || 100;
     renderCanvas();
-    saveToStorage();
 }
 
-function sendToBack() {
-    const page = project.pages[currentPageIndex];
-    const p = page.panels.find(p => p.id === selectedPanelId);
-    if (!p) return;
-    const minZ = Math.min(999, ...page.panels.map(p => p.zIndex || 1));
-    p.zIndex = minZ - 1;
-    renderCanvas();
-    saveToStorage();
+function makeDraggable(element, data) {
+    let isDown = false, startX, startY, startLeft, startTop;
+
+    element.onmousedown = (e) => {
+        if (e.target.contentEditable === 'true') return;
+        isDown = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = data.x;
+        startTop = data.y;
+        e.preventDefault();
+    };
+
+    document.onmousemove = (e) => {
+        if (!isDown) return;
+        data.x = startLeft + (e.clientX - startX) / state.zoom;
+        data.y = startTop + (e.clientY - startY) / state.zoom;
+        element.style.left = data.x + 'px';
+        element.style.top = data.y + 'px';
+
+        if (state.selectedPanel === data) {
+            document.getElementById('propX').value = Math.round(data.x);
+            document.getElementById('propY').value = Math.round(data.y);
+        }
+    };
+
+    document.onmouseup = () => {
+        isDown = false;
+    };
 }
 
-function deleteSelectedPanel() {
-    const page = project.pages[currentPageIndex];
-    page.panels = page.panels.filter(p => p.id !== selectedPanelId);
-    selectedPanelId = null;
-    updatePropertiesPanel();
-    renderCanvas();
-    saveToStorage();
-}
+function handleImageUpload(e) {
+    if (state.currentPage === -1) {
+        alert('Add a page first!');
+        return;
+    }
 
-// ===================== IMAGE IMPORT =====================
-function onFileSelect(e) {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    
-    const file = files[0];
+    const file = e.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = (ev) => {
-        pendingImageSrc = ev.target.result;
-        openCropper(pendingImageSrc);
+    reader.onload = () => {
+        els.cropperModal.classList.add('active');
+
+        if (state.cropper) {
+            state.cropper.destroy();
+            state.cropper = null;
+        }
+
+        els.cropperImage.src = reader.result;
+
+        els.cropperImage.onload = () => {
+            setTimeout(() => {
+                state.cropper = new Cropper(els.cropperImage, {
+                    aspectRatio: NaN,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    background: false
+                });
+            }, 150);
+        };
     };
     reader.readAsDataURL(file);
     e.target.value = '';
 }
 
-// ===================== CROPPER =====================
-function openCropper(src) {
-    els.cropperModal.classList.add('active');
-    
-    if (cropper) { cropper.destroy(); cropper = null; }
-    
-    els.cropperImage.onload = function() {
-        if (cropper) cropper.destroy();
-        cropper = new Cropper(els.cropperImage, {
-            viewMode: 1,
-            autoCropArea: 0.8,
-            responsive: true,
-            background: false
-        });
-    };
-    els.cropperImage.src = src;
-}
-
 function closeCropper() {
+    if (state.cropper) {
+        state.cropper.destroy();
+        state.cropper = null;
+    }
     els.cropperModal.classList.remove('active');
-    if (cropper) { cropper.destroy(); cropper = null; }
-    pendingImageSrc = null;
+    els.cropperImage.src = '';
 }
 
 function applyCrop() {
-    if (!cropper || !pendingImageSrc) {
-        console.log('Cropper not ready or no image');
-        return;
-    }
-    const data = cropper.getData();
-    const page = project.pages[currentPageIndex];
-    
-    const panel = {
-        id: 'panel_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-        src: pendingImageSrc,
+    if (!state.cropper) return;
+
+    const canvas = state.cropper.getCroppedCanvas({
+        imageSmoothingQuality: 'high'
+    });
+
+    const page = state.pages[state.currentPage];
+    if (!page) return;
+
+    page.panels.push({
         x: 50,
         y: 50,
-        width: Math.min(400, page.width - 100),
-        height: Math.min(300, page.height - 100),
-        cropX: 50,
-        cropY: 50,
-        zIndex: (Math.max(0, ...page.panels.map(p => p.zIndex || 1)) + 1)
-    };
-    
-    page.panels.push(panel);
-    selectedPanelId = panel.id;
-    
+        w: canvas.width > 500? 500 : canvas.width,
+        h: canvas.height > 500? 500 : canvas.height,
+        src: canvas.toDataURL('image/png'),
+        z: page.panels.length
+    });
+
     closeCropper();
-    updatePropertiesPanel();
     renderCanvas();
-    renderPageList();
-    saveToStorage();
-    console.log('Panel added:', panel.id, 'Total panels:', page.panels.length);
 }
 
-// ===================== MODE SWITCH =====================
-function setMode(m) {
-    mode = m;
-    els.btnEditMode.classList.toggle('active', m === 'edit');
-    els.btnReaderMode.classList.toggle('active', m === 'reader');
-    
-    if (m === 'reader') enterReader();
-    else exitReader();
+function addElement(type) {
+    if (state.currentPage === -1) return;
+    const page = state.pages[state.currentPage];
+    page.elements.push({
+        type,
+        x: 100,
+        y: 100,
+        text: type === 'balloon'? 'Text here' : 'BOOM!'
+    });
+    renderCanvas();
 }
 
-// ===================== READER =====================
-let readerPageIndex = 0;
+function deleteSelectedPanel() {
+    if (!state.selectedPanel || state.currentPage === -1) return;
+    const page = state.pages[state.currentPage];
+    const idx = page.panels.indexOf(state.selectedPanel);
+    if (idx > -1) page.panels.splice(idx, 1);
+    state.selectedPanel = null;
+    renderCanvas();
+}
 
-function enterReader() {
-    if (project.pages.length === 0) {
-        setMode('edit');
-        return;
+function layerPanel(dir) {
+    if (!state.selectedPanel || state.currentPage === -1) return;
+    const page = state.pages[state.currentPage];
+    const panels = page.panels;
+    const idx = panels.indexOf(state.selectedPanel);
+
+    if (dir === 'front' && idx < panels.length - 1) {
+        [panels[idx], panels[idx + 1]] = [panels[idx + 1], panels[idx]];
+    } else if (dir === 'back' && idx > 0) {
+        [panels[idx], panels[idx - 1]] = [panels[idx - 1], panels[idx]];
     }
-    readerPageIndex = currentPageIndex;
-    els.readerView.classList.add('active');
-    renderReaderPage();
+
+    panels.forEach((p, i) => p.z = i);
+    renderCanvas();
 }
 
-function exitReader() {
-    els.readerView.classList.remove('active');
-    setMode('edit');
+function changePageSize() {
+    const [w, h] = document.getElementById('pageSizeSelect').value.split(',').map(Number);
+    state.pageSize = [w, h];
+    if (state.currentPage > -1) {
+        state.pages[state.currentPage].width = w;
+        state.pages[state.currentPage].height = h;
+        renderCanvas();
+    }
 }
 
-function renderReaderPage() {
-    const page = project.pages[readerPageIndex];
-    
-    els.readerCounter.textContent = `${readerPageIndex + 1} / ${project.pages.length}`;
-    els.readerProgress.style.width = ((readerPageIndex + 1) / project.pages.length * 100) + '%';
-    
-    const scale = Math.min(
-        (els.readerStage.clientWidth * 0.9) / page.width,
-        (els.readerStage.clientHeight * 0.9) / page.height,
-        1
-    );
-    
-    els.readerPage.style.width = (page.width * scale) + 'px';
-    els.readerPage.style.height = (page.height * scale) + 'px';
+function setZoom(z) {
+    state.zoom = z;
+    renderCanvas();
+}
+
+function setMode(mode) {
+    state.mode = mode;
+    document.getElementById('btnEditMode').classList.toggle('active', mode === 'edit');
+    document.getElementById('btnReaderMode').classList.toggle('active', mode === 'reader');
+
+    if (mode === 'reader') {
+        if (state.pages.length === 0) {
+            alert('Add a page first!');
+            setMode('edit');
+            return;
+        }
+        state.readerIndex = 0;
+        renderReader();
+        els.readerView.classList.add('active');
+    } else {
+        els.readerView.classList.remove('active');
+    }
+}
+
+function renderReader() {
+    if (state.pages.length === 0) return;
+
+    const page = state.pages[state.readerIndex];
     els.readerPage.innerHTML = '';
-    els.readerPage.style.background = page.background;
-    els.readerPage.style.position = 'relative';
-    els.readerPage.style.overflow = 'hidden';
-    
-    const sorted = [...page.panels].sort((a, b) => (a.zIndex || 1) - (b.zIndex || 1));
-    sorted.forEach(panel => {
-        const el = document.createElement('div');
-        el.style.position = 'absolute';
-        el.style.left = (panel.x * scale) + 'px';
-        el.style.top = (panel.y * scale) + 'px';
-        el.style.width = (panel.width * scale) + 'px';
-        el.style.height = (panel.height * scale) + 'px';
-        el.style.overflow = 'hidden';
-        
+
+    const container = document.createElement('div');
+    container.style.position = 'relative';
+    container.style.width = page.width + 'px';
+    container.style.height = page.height + 'px';
+    container.style.background = 'white';
+    container.style.transform = 'scale(0.8)';
+    container.style.transformOrigin = 'top center';
+
+    page.panels.forEach(p => {
         const img = document.createElement('img');
-        img.src = panel.src;
-        img.style.width = '100%';
-        img.style.height = '100%';
+        img.src = p.src;
+        img.style.position = 'absolute';
+        img.style.left = p.x + 'px';
+        img.style.top = p.y + 'px';
+        img.style.width = p.w + 'px';
+        img.style.height = p.h + 'px';
         img.style.objectFit = 'cover';
-        img.style.objectPosition = `${panel.cropX || 50}% ${panel.cropY || 50}%`;
-        el.appendChild(img);
-        els.readerPage.appendChild(el);
+        container.appendChild(img);
     });
+
+    page.elements.forEach(el => {
+        const div = document.createElement('div');
+        div.className = el.type === 'balloon'? 'comic-balloon' : 'comic-sfx';
+        div.style.position = 'absolute';
+        div.style.left = el.x + 'px';
+        div.style.top = el.y + 'px';
+        div.textContent = el.text;
+        container.appendChild(div);
+    });
+
+    els.readerPage.appendChild(container);
+    els.readerCounter.textContent = `${state.readerIndex + 1} / ${state.pages.length}`;
+    els.readerProgress.style.width = `${((state.readerIndex + 1) / state.pages.length) * 100}%`;
 }
 
-function prevPage() {
-    if (readerPageIndex > 0) {
-        readerPageIndex--;
-        renderReaderPage();
-    }
+function navReader(dir) {
+    state.readerIndex += dir;
+    if (state.readerIndex < 0) state.readerIndex = 0;
+    if (state.readerIndex >= state.pages.length) state.readerIndex = state.pages.length - 1;
+    renderReader();
 }
 
-function nextPage() {
-    if (readerPageIndex < project.pages.length - 1) {
-        readerPageIndex++;
-        renderReaderPage();
-    }
-}
-
-function onKeyDown(e) {
-    if (mode !== 'reader') return;
-    if (e.key === 'ArrowLeft') prevPage();
-    if (e.key === 'ArrowRight') nextPage();
-    if (e.key === 'Escape') exitReader();
-}
-
-// ===================== EXPORT =====================
 function exportHTML() {
-    let html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${project.title}</title>
-<style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#1a1a2e; font-family:system-ui; }
-.page { max-width:800px; margin:20px auto; background:#fff; position:relative; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.3); }
-.panel { position:absolute; overflow:hidden; }
-.panel img { width:100%; height:100%; object-fit:cover; }
-.nav { text-align:center; padding:20px; }
-.nav button { padding:10px 20px; margin:0 5px; cursor:pointer; }
-</style>
-</head>
-<body>
-<h1 style="text-align:center; color:#e94560; padding:20px;">${project.title}</h1>
-`;
-    project.pages.forEach((page, idx) => {
-        html += `<div class="page" id="page${idx}" style="width:${page.width}px; height:${page.height}px; display:${idx===0?'block':'none'};">\n`;
-        const sorted = [...page.panels].sort((a,b) => (a.zIndex||1)-(b.zIndex||1));
-        sorted.forEach(p => {
-            html += `  <div class="panel" style="left:${p.x}px; top:${p.y}px; width:${p.width}px; height:${p.height}px;">\n`;
-            html += `    <img src="${p.src}" style="object-position:${p.cropX||50}% ${p.cropY||50}%;">\n`;
-            html += `  </div>\n`;
-        });
-        html += `</div>\n`;
-    });
-    html += `
-<div class="nav">
-<button onclick="prevP()">Prev</button>
-<span id="counter">1 / ${project.pages.length}</span>
-<button onclick="nextP()">Next</button>
-</div>
-<script>
-let cp = 0, total = ${project.pages.length};
-function showPage(n) {
-    for(let i=0;i<total;i++) document.getElementById('page'+i).style.display = 'none';
-    document.getElementById('page'+n).style.display = 'block';
-    document.getElementById('counter').textContent = (n+1)+' / '+total;
-}
-function nextP(){ if(cp<total-1){cp++; showPage(cp);} }
-function prevP(){ if(cp>0){cp--; showPage(cp);} }
-document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight')nextP(); if(e.key==='ArrowLeft')prevP(); });
-<\/script>
-</body>
-</html>`;
-    downloadFile(html, project.title.replace(/\s+/g,'_') + '.html', 'text/html');
+    alert('Export HTML: Coming soon! Use Save Project for now.');
 }
 
 function exportJSON() {
-    const data = JSON.stringify(project, null, 2);
-    downloadFile(data, project.title.replace(/\s+/g,'_') + '.json', 'application/json');
+    const data = JSON.stringify(state.pages, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'comic-project.json';
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
-function loadProject(e) {
+function loadJSON(e) {
     const file = e.target.files[0];
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = () => {
         try {
-            project = JSON.parse(ev.target.result);
-            saveToStorage();
-            renderPageList();
-            selectPage(0);
-            alert('Project loaded!');
-        } catch(err) {
+            state.pages = JSON.parse(reader.result);
+            state.currentPage = state.pages.length > 0? 0 : -1;
+            renderPages();
+            renderCanvas();
+        } catch (err) {
             alert('Invalid project file');
         }
     };
@@ -620,15 +566,18 @@ function loadProject(e) {
     e.target.value = '';
 }
 
-function downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-}
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (state.mode === 'reader') {
+        if (e.key === 'ArrowLeft') navReader(-1);
+        if (e.key === 'ArrowRight') navReader(1);
+        if (e.key === 'Escape') setMode('edit');
+    } else {
+        if (e.key === 'Delete' && state.selectedPanel) deleteSelectedPanel();
+        if (e.key === 'Escape') selectPanel(null);
+    }
+});
 
-// ===================== START =====================
-init();
+// Start with scroll view and one page
+setViewMode('scroll');
+addPage();
