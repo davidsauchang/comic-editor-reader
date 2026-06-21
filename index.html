@@ -1,152 +1,281 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comic Studio</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
-    <link rel="stylesheet" href="style.css">
+    <title>MangaMesh</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="brand">🎨 Comic Studio</div>
-
-        <div class="mode-toggle">
-            <button class="mode-btn active" id="btnEditMode">Edit</button>
-            <button class="mode-btn" id="btnReaderMode">Reader</button>
+    <!-- LEFT SIDEBAR FOR PAGE CONTROLS, ASSET INSERTION, GRID OPTIONS, AND EXPORT SETTINGS -->
+    <div id="sidebar">
+        <div class="brand-logo-container">
+    <div class="mangamesh-logo">
+        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 20V4l6 6" />
+            <path d="M20 20V4l-6 6" />
+            <path d="M10 10h4" />
+            <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+        </svg>
+        <span class="logo-text">Manga<span class="logo-accent">Mesh</span></span>
+    </div>
+</div>
+        <div class="section-box">
+            <h3>Page Layouts</h3>
+            <select id="pageSizeSelect" class="btn" style="background:#222; text-align:left;">
+        <option value="414,896">Vertical Webtoon (414x896)</option>
+        <option value="800,1200">A4 Portrait (800x1200)</option>
+        <option value="1200,800">A4 Landscape (1200x800)</option>
+    </select>
+            <button class="btn" id="btnAddPage">+ Add Page</button>
+            <button class="btn" id="btnDeletePage">Delete Page</button>
         </div>
 
-        <div class="panel-section">
-            <h3>Pages</h3>
-            <div class="btn-row">
-                <button class="btn btn-secondary btn-sm" id="btnAddPage">+ Page</button>
-                <button class="btn btn-secondary btn-sm" id="btnDeletePage">Delete</button>
-            </div>
+        <div class="section-box">
+            <h3>Asset Injectors</h3>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">+ Insert Image Panel</button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+            <button class="btn" id="btnAddSpeech">+ Add Speech Box</button>
+            <button class="btn" id="btnDeletePanel" style="background:#8b2626; margin-top: 12px; width:100%;">Delete Selected</button>
         </div>
 
-        <div class="page-list" id="pageList"></div>
+        <div class="section-box">
+    <h3>Grid & Snapping</h3>
+    <div class="prop-group" style="margin-bottom: 12px;">
+        <label>Background Style</label>
+        <select id="gridStyleSelect" class="btn" style="background:#222; margin:0; width:100%; text-align:left;">
+            <option value="none">Blank White</option>
+            <option value="grid">Blueprint Grid</option>
+            <option value="dots">Dot Matrix</option>
+        </select>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+        <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="chkSnapToGrid" style="width: 16px; height: 16px; cursor: pointer;">
+            Snap to 20px Grid
+        </label>
+        
+        <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
+            <input type="checkbox" id="btnToggleMargin" style="width: 16px; height: 16px; cursor: pointer;" checked>
+            Show Inner Margin Guides
+        </label>
+    </div>
+</div>
+<div class="sidebar-credits">
+        Created by <span class="credits-name">David Sau Chang</span>
+    </div>
 
-        <div class="panel-section">
-            <h3>Tools</h3>
-            <button class="btn btn-secondary btn-sm" id="btnAddBalloon" style="margin-bottom:6px;">💬 Add Balloon</button>
-            <button class="btn btn-secondary btn-sm" id="btnAddSFX" style="margin-bottom:6px;">💥 Add SFX</button>
-        </div>
-
-        <div class="panel-section">
-            <h3>Import</h3>
-            <label for="fileInput" class="btn btn-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Add Image
+    </div>
+<!-- workspace contains the main canvas area and the top toolbar for project management, view toggles, and zoom controls -->
+    <div id="workspace">
+    <div id="toolbar">
+        
+        <div class="toolbar-group-left">
+            <label for="btnLoadProject" class="btn-icon" title="Load Project File (.json)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <path d="M12 11v6M9 14l3-3 3 3"></path>
+                </svg>
             </label>
-            <input type="file" id="fileInput" accept="image/*" multiple>
+            <input type="file" id="btnLoadProject" accept=".json" style="display: none;" />
+            
+            <button class="btn-icon" id="btnSaveProject" title="Save Project File (.json)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button class="btn-icon" id="btnExportImages" title="Export All Pages (ZIP PNG)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+            </button>
+            
+            <button class="btn-icon" id="btnExportPDF" title="Compile & Export Document (PDF)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+            </button>
+
+            <div class="toolbar-divider"></div>
+
+            <button id="btnUndo" class="btn-icon" title="Undo (Ctrl+Z)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v6h6" />
+                    <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
+                </svg>
+            </button>
+
+            <button id="btnRedo" class="btn-icon" title="Redo (Alt+Shift+Z)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 7v6h-6" />
+                    <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" />
+                </svg>
+            </button>
+        </div>
+        
+        <div class="toolbar-group-center">
+            <div class="view-toggle-segmented">
+                <button class="btn-segment active" id="btnSingleView">Single View</button>
+                <button class="btn-segment" id="btnScrollView">Scroll View</button>
+            </div>
+            
+            <select id="zoomSelect" class="toolbar-select zoom-dropdown" onchange="applyZoom(parseFloat(this.value))">
+                <option value="0.5">50%</option>
+                <option value="0.75">75%</option>
+                <option value="1" selected>100%</option>
+                <option value="1.5">150%</option>
+            </select>
+        </div>
+        
+    </div>
+    
+    <div id="canvas-container">
+        <div id="pageCanvas"></div>
+    </div>
+    
+</div>
+    <!-- RIGHT SIDEBAR FOR LAYER CONTROL, PAGE ORGANIZATION, AND PROPERTIES PANEL -->
+    <div id="sidebar-right">
+        <input type="checkbox" id="toggle-sidebar-right" class="sidebar-toggle-check" hidden>
+    
+    <label for="toggle-sidebar-right" class="sidebar-toggle-btn" title="Toggle Sidebar">
+        <span class="arrow-icon">▶</span>
+    </label>
+        
+        
+        <div class="section-box">
+            <h3>Organize Pages</h3>
+            <div id="pageList"></div>
         </div>
 
-        <div class="panel-section" id="propertiesPanel" style="display:none;">
-            <h3>Properties</h3>
-            <div class="prop-row">
-                <label>X</label>
-                <input type="number" id="propX">
+        <div id="propertiesPanel" class="section-box hidden">
+            <h3 id="propertiesTitle">Transform Element</h3>
+            
+            <div class="prop-grid">
+                <div class="prop-group"><label>X Pos (px)</label><input type="number" id="panelPropX"></div>
+                <div class="prop-group"><label>Y Pos (px)</label><input type="number" id="panelPropY"></div>
             </div>
-            <div class="prop-row">
-                <label>Y</label>
-                <input type="number" id="propY">
-            </div>
-            <div class="prop-row">
-                <label>W</label>
-                <input type="number" id="propW">
-            </div>
-            <div class="prop-row">
-                <label>H</label>
-                <input type="number" id="propH">
-            </div>
-            <div class="btn-row">
-                <button class="btn btn-secondary btn-sm" id="btnFront">Front</button>
-                <button class="btn btn-secondary btn-sm" id="btnBack">Back</button>
-            </div>
-            <button class="btn btn-secondary btn-sm" id="btnDeletePanel" style="margin-top:8px;">Delete Panel</button>
-        </div>
 
-        <div class="panel-section">
-            <h3>Export</h3>
-            <button class="btn btn-secondary" id="btnExportHTML">Export HTML</button>
-            <button class="btn btn-secondary" id="btnExportJSON" style="margin-top:6px;">Save Project</button>
-            <label for="loadInput" class="btn btn-secondary" style="margin-top:6px;">
-                Load Project
-            </label>
-            <input type="file" id="loadInput" accept=".json">
-        </div>
+            <div class="prop-grid" id="sizePropGroup">
+                <div class="prop-group"><label>Width (px)</label><input type="number" id="panelPropW"></div>
+                <div class="prop-group"><label>Height (px)</label><input type="number" id="panelPropH"></div>
+            </div>
+
+            <div class="property-group">
+                <label for="propRotation">Rotation (Deg)</label>
+                <input type="range" id="propRotation" min="-180" max="180" value="0">
+                <input type="number" id="propRotationNum" min="-180" max="180" value="0" style="width: 50px; margin-left: 5px;">
     </div>
 
-    <!-- MAIN AREA -->
-    <div class="main-area">
-        <div class="toolbar">
-            <div class="toolbar-group">
-                <span style="font-size:0.8rem; color:#888;">Page Size:</span>
-                <select class="toolbar-btn" id="pageSizeSelect">
-                    <option value="800,1200">800 x 1200</option>
-                    <option value="1200,1800">1200 x 1800</option>
-                    <option value="1080,1920">1080 x 1920 (Mobile)</option>
-                    <option value="600,900">600 x 900 (Small)</option>
-                </select>
-            </div>
-            <div class="toolbar-group">
-                <span style="font-size:0.8rem; color:#888;">Zoom:</span>
-                <button class="toolbar-btn" data-zoom="0.5">50%</button>
-                <button class="toolbar-btn" data-zoom="0.75">75%</button>
-                <button class="toolbar-btn" data-zoom="1">100%</button>
-                <button class="toolbar-btn" data-zoom="1.5">150%</button>
-            </div>
-        </div>
-        <div class="workspace" id="workspace">
-            <div class="empty-state" id="emptyState">
-                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/><path d="M7 11h10v2H7zM7 7h10v2H7zM7 15h7v2H7z"/></svg>
-                <h3>No Pages Yet</h3>
-                <p>Click "+ Page" to start, then add images.</p>
-            </div>
-            <div class="page-canvas" id="pageCanvas" style="display:none;"></div>
-        </div>
-    </div>
+            <div id="contentPropGroup" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
+                <div class="prop-group">
+    <label>Bubble Style</label>
+    <select id="bubbleStyleSelect">
+    <option value="vector">Speech Balloon (Sharp Tail)</option>
+    <option value="thought">Thought Bubble (Ovals)</option>
+    <option value="classic">Classic Box Style</option>
+    <option value="title">Transparent Text Title</option>
+</select>
+</div>
+                <div class="prop-group">
+                    <label>Text Content</label>
+                    <textarea id="bubbleTextModifier" rows="3"></textarea>
+                </div>
+                <div class="prop-grid">
+                    <div class="prop-group">
+                        <label for="fontFamilySelect">Font Style</label>
+                        <select id="fontFamilySelect" class="btn" style="background: var(--bg-input); text-align-last: left; font-weight: normal;">
+                            <option value="'Comic Neue', sans-serif" style="font-family: 'Comic Neue';">Comic Neue (Dialogue)</option>
+                            <option value="'Bangers', sans-serif" style="font-family: 'Bangers';">Bangers (Action/SFX)</option>
+                            <option value="'Permanent Marker', sans-serif" style="font-family: 'Permanent Marker';">Marker (Narration)</option>
+                            <option value="'Kalam', sans-serif" style="font-family: 'Kalam';">Kalam (Handwritten)</option>
+                            <option value="'Luckiest Guy', sans-serif" style="font-family: 'Luckiest Guy';">Luckiest Guy (Title)</option>
+                        </select>
+                    </div>
 
-    <!-- READER MODE -->
-    <div class="reader-view" id="readerView">
-        <div class="reader-toolbar">
-            <span id="readerTitle">Comic Reader</span>
-            <div class="toolbar-group">
-                <span id="readerCounter">1 / 1</span>
-                <button class="toolbar-btn" id="btnExitReader">Exit</button>
+                    <div class="prop-group">
+                        <label for="fontSizeSelect">Font Size</label>
+                        <select id="fontSizeSelect" class="btn" style="background: var(--bg-input); text-align-last: left; font-weight: normal;">
+                            <option value="12">12px</option>
+                            <option value="14" selected>14px</option>
+                            <option value="16">16px</option>
+                            <option value="18">18px</option>
+                            <option value="20">20px</option>
+                            <option value="24">24px</option>
+                            <option value="28">28px</option>
+                            <option value="32">32px</option>
+                            <option value="36">36px</option>
+                            <option value="48">48px</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="reader-stage" id="readerStage">
-            <button class="reader-nav prev" id="btnPrevPage">‹</button>
-            <div class="reader-page" id="readerPage"></div>
-            <button class="reader-nav next" id="btnNextPage">›</button>
-            <div class="reader-progress">
-                <div class="reader-progress-bar" id="readerProgress"></div>
+            
+            <div class="property-group">
+                <label for="propFontColor">Font Color</label>
+                        <select id="propFontColor" class="toolbar-select" style="width: 100%; cursor: pointer;">
+                            <option value="#000000">Standard Black (#000000)</option>
+                            <option value="#e53935">Crimson Screaming (#E53935)</option>
+                            <option value="#ffb300">Shonen Gold (#FFB300)</option>
+                            <option value="#00acc1">Cyberpunk Cyan (#00ACC1)</option>
+                            <option value="#43a047">Poison Magic Green (#43A047)</option>
+                        </select>
             </div>
-        </div>
-    </div>
 
-    <!-- CROPPER MODAL -->
-    <div class="modal-overlay" id="cropperModal">
+            <div id="panelStyleGroup" style="display: none; flex-direction: column; gap: 4px; margin-top: 12px; margin-bottom: 12px;">
+                <label style="font-size: 11px; color: var(--text-label); text-transform: uppercase; letter-spacing: 0.5px;">Panel Style</label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-light); cursor: pointer; margin-top: 4px;">
+                    <input type="checkbox" id="check-white-border">
+                    White Outline Border
+                </label>
+                
+                <label style="display: flex; align-items: center; gap: 8px; margin-top: 10px; color: #ff3333; font-weight: bold; font-size: 12px; cursor: pointer;">
+                    <input type="checkbox" id="chkDistortMode"> 
+                    Perspective Distortion Mode
+                </label>
+            
+            </div>
+            <div class="section-box">
+            <h3>Layer Control</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+                <button class="btn" id="layer-forward" style="margin:0; font-size:11px; padding:8px 4px;">Forward</button>
+                <button class="btn" id="layer-backward" style="margin:0; font-size:11px; padding:8px 4px;">Backward</button>
+                <button class="btn" id="layer-top" style="margin:0; font-size:11px; padding:8px 4px;">To Front</button>
+                <button class="btn" id="layer-bottom" style="margin:0; font-size:11px; padding:8px 4px;">To Back</button>
+            </div>
+        </div>
+
+    <div id="cropModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Crop Image</h3>
-                <button class="modal-close" id="btnCloseCropper">&times;</button>
+            <div class="crop-area">
+                <img id="cropperImage">
             </div>
-            <div class="modal-body">
-                <img id="cropperImage" src="" alt="Crop">
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="btnCancelCrop">Cancel</button>
-                <button class="btn btn-primary" id="btnApplyCrop">Apply & Add</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" id="btnApplyCrop" style="background:var(--accent);">Finalize Crop</button>
+                <button class="btn" id="btnCancelCrop" style="margin:0;">Cancel</button>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
