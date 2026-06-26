@@ -1,0 +1,11 @@
+{
+  "name": "MangaMesh — Comic Layout Creator",
+  "short_name": "MangaMesh",
+  "description": "Create, edit, and export comic layouts with ease",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#1e1e24",
+  "theme_color": "#1e1e24",
+  "categories": ["art", "design", "productivity"]
+}
