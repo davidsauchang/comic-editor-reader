@@ -6,7 +6,7 @@ import { state, els, elsProps, saveHistoryState } from './state.js';
 import { renderCanvas } from './canvas.js';
 
 // ============================================================
-// 🎯 TAIL DRAGGABLE
+// 🎯 TAIL DRAGGABLE — Speech Bubble Tail (with Touch)
 // ============================================================
 
 export function makeTailDraggable(handle, data, container, pathEl) {
@@ -15,23 +15,50 @@ export function makeTailDraggable(handle, data, container, pathEl) {
     let isMovingTail = false;
     let rawTail = { x: 0, y: 0 };
 
+    // ── Mouse ──
     handle.addEventListener('mousedown', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        
+        startTailDrag(e.clientX, e.clientY);
+    });
+
+    // ── Touch ──
+    handle.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        startTailDrag(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    function startTailDrag(clientX, clientY) {
         isMovingTail = true;
         rawTail.x = data.tailX !== undefined ? data.tailX : data.width / 2;
         rawTail.y = data.tailY !== undefined ? data.tailY : data.height + 30;
         
         window.addEventListener('mousemove', onMoveTail);
+        window.addEventListener('touchmove', onTouchMoveTail, { passive: false });
         window.addEventListener('mouseup', onUpTail);
-    });
+        window.addEventListener('touchend', onUpTail);
+    }
 
     function onMoveTail(e) {
         if (!isMovingTail) return;
+        handleTailMove(e.clientX, e.clientY);
+    }
+
+    function onTouchMoveTail(e) {
+        if (!isMovingTail) return;
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        handleTailMove(touch.clientX, touch.clientY);
+    }
+
+    function handleTailMove(clientX, clientY) {
+        const dx = (clientX - rawTail.x) / state.zoom;
+        const dy = (clientY - rawTail.y) / state.zoom;
         
-        rawTail.x += e.movementX / state.zoom;
-        rawTail.y += e.movementY / state.zoom;
+        rawTail.x += dx;
+        rawTail.y += dy;
         
         const displayX = state.snapToGrid ? Math.round(rawTail.x / state.gridSize) * state.gridSize : rawTail.x;
         const displayY = state.snapToGrid ? Math.round(rawTail.y / state.gridSize) * state.gridSize : rawTail.y;
@@ -46,14 +73,18 @@ export function makeTailDraggable(handle, data, container, pathEl) {
     }
 
     function onUpTail() {
-        isMovingTail = false;
-        window.removeEventListener('mousemove', onMoveTail);
-        window.removeEventListener('mouseup', onUpTail);
-        
-        saveHistoryState();
-        data.tailX = state.snapToGrid ? Math.round(rawTail.x / state.gridSize) * state.gridSize : rawTail.x;
-        data.tailY = state.snapToGrid ? Math.round(rawTail.y / state.gridSize) * state.gridSize : rawTail.y;
-        renderCanvas();
+        if (isMovingTail) {
+            isMovingTail = false;
+            window.removeEventListener('mousemove', onMoveTail);
+            window.removeEventListener('touchmove', onTouchMoveTail);
+            window.removeEventListener('mouseup', onUpTail);
+            window.removeEventListener('touchend', onUpTail);
+            
+            saveHistoryState();
+            data.tailX = state.snapToGrid ? Math.round(rawTail.x / state.gridSize) * state.gridSize : rawTail.x;
+            data.tailY = state.snapToGrid ? Math.round(rawTail.y / state.gridSize) * state.gridSize : rawTail.y;
+            renderCanvas();
+        }
     }
 }
 
@@ -109,7 +140,7 @@ function updateTailPath(data, pathEl, tailX, tailY) {
 }
 
 // ============================================================
-// 🖱️ ELEMENT INTERACTABLE
+// 🖱️ ELEMENT INTERACTABLE — Drag & Resize (with Touch)
 // ============================================================
 
 export function makeElementInteractable(element, data, type, resizeHandle) {
@@ -118,12 +149,27 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
     let isDragging = false, isResizing = false;
     let startX, startY, startLeft, startTop, startWidth, startHeight;
 
+    // ── Mouse ──
     element.addEventListener('mousedown', (e) => {
         if (e.target.classList.contains('speech-text') || 
             e.target.classList.contains('tail-control-handle') || 
             e.target.classList.contains('panel-corner-handle')) return;
         e.stopPropagation();
-        
+        startDrag(e.clientX, e.clientY, e);
+    });
+
+    // ── Touch ──
+    element.addEventListener('touchstart', (e) => {
+        if (e.target.classList.contains('speech-text') || 
+            e.target.classList.contains('tail-control-handle') || 
+            e.target.classList.contains('panel-corner-handle')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const touch = e.changedTouches[0];
+        startDrag(touch.clientX, touch.clientY, e);
+    }, { passive: false });
+
+    function startDrag(clientX, clientY, e) {
         if (type === 'panel') {
             state.currentPanelId = data.id;
             state.currentSpeechId = null;
@@ -143,20 +189,32 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
             isDragging = true;
         }
 
-        startX = e.clientX;
-        startY = e.clientY;
+        startX = clientX;
+        startY = clientY;
         startLeft = data.left;
         startTop = data.top;
         startWidth = data.width;
         startHeight = data.height;
 
         window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
         window.addEventListener('mouseup', onMouseUp);
-    });
+        window.addEventListener('touchend', onTouchEnd);
+    }
 
     function onMouseMove(e) {
-        const dx = (e.clientX - startX) / state.zoom;
-        const dy = (e.clientY - startY) / state.zoom;
+        handleMove(e.clientX, e.clientY);
+    }
+
+    function onTouchMove(e) {
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        handleMove(touch.clientX, touch.clientY);
+    }
+
+    function handleMove(clientX, clientY) {
+        const dx = (clientX - startX) / state.zoom;
+        const dy = (clientY - startY) / state.zoom;
 
         if (isDragging) {
             let targetLeft = startLeft + dx;
@@ -213,12 +271,22 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
     }
 
     function onMouseUp() {
+        endDrag();
+    }
+
+    function onTouchEnd() {
+        endDrag();
+    }
+
+    function endDrag() {
         if (isDragging || isResizing) {
             saveHistoryState();
             isDragging = false;
             isResizing = false;
             window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('touchmove', onTouchMove);
             window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('touchend', onTouchEnd);
             renderCanvas();
         }
     }
@@ -235,7 +303,6 @@ function updateDistortionPolygon(element, data) {
     const polygon = svg.querySelector('polygon');
     if (!polygon) return;
     
-    // Get current bounds of corners
     const xs = data.corners.map(c => c.x);
     const ys = data.corners.map(c => c.y);
     const minX = Math.min(...xs);
@@ -245,22 +312,18 @@ function updateDistortionPolygon(element, data) {
     const w = maxX - minX;
     const h = maxY - minY;
     
-    // ✅ Update panel div position to match corners (ABSOLUTE)
     element.style.left = minX + 'px';
     element.style.top = minY + 'px';
     element.style.width = w + 'px';
     element.style.height = h + 'px';
     
-    // ✅ Update polygon points (relative to panel div)
     const points = data.corners.map(c => `${c.x - minX},${c.y - minY}`).join(' ');
     polygon.setAttribute('points', points);
     
-    // ✅ Update SVG viewBox to match (RELATIVE to panel div)
     svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
     svg.setAttribute('width', w);
     svg.setAttribute('height', h);
     
-    // ✅ Update pattern position (relative to panel div)
     const pattern = svg.querySelector('pattern');
     if (pattern) {
         pattern.setAttribute('x', 0);
@@ -277,7 +340,7 @@ function updateDistortionPolygon(element, data) {
 }
 
 // ============================================================
-// 🎯 CORNER DRAGGABLE — For Distortion Mode
+// 🎯 CORNER DRAGGABLE — For Distortion Mode (with Touch)
 // ============================================================
 
 export function makeCornerDraggable(handle, data, cornerIndex) {
@@ -285,24 +348,49 @@ export function makeCornerDraggable(handle, data, cornerIndex) {
     let isDragging = false;
     let startX, startY, startCornerX, startCornerY;
     
+    // ── Mouse ──
     handle.addEventListener('mousedown', (e) => {
         e.stopPropagation();
         e.preventDefault();
+        startCornerDrag(e.clientX, e.clientY);
+    });
+    
+    // ── Touch ──
+    handle.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        startCornerDrag(touch.clientX, touch.clientY);
+    }, { passive: false });
+    
+    function startCornerDrag(clientX, clientY) {
         isDragging = true;
-        
-        startX = e.clientX;
-        startY = e.clientY;
+        startX = clientX;
+        startY = clientY;
         startCornerX = data.corners[cornerIndex].x;
         startCornerY = data.corners[cornerIndex].y;
         
         window.addEventListener('mousemove', onMove);
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
         window.addEventListener('mouseup', onUp);
-    });
+        window.addEventListener('touchend', onUp);
+    }
     
     function onMove(e) {
         if (!isDragging) return;
-        const dx = (e.clientX - startX) / state.zoom;
-        const dy = (e.clientY - startY) / state.zoom;
+        handleCornerMove(e.clientX, e.clientY);
+    }
+    
+    function onTouchMove(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        const touch = e.changedTouches[0];
+        handleCornerMove(touch.clientX, touch.clientY);
+    }
+    
+    function handleCornerMove(clientX, clientY) {
+        const dx = (clientX - startX) / state.zoom;
+        const dy = (clientY - startY) / state.zoom;
         
         let newX = startCornerX + dx;
         let newY = startCornerY + dy;
@@ -320,6 +408,7 @@ export function makeCornerDraggable(handle, data, cornerIndex) {
             updateDistortionPolygon(panelElement, data);
         }
         
+        // Update handle position relative to panel
         const xs = data.corners.map(c => c.x);
         const ys = data.corners.map(c => c.y);
         const minX = Math.min(...xs);
@@ -332,7 +421,9 @@ export function makeCornerDraggable(handle, data, cornerIndex) {
         if (isDragging) {
             isDragging = false;
             window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('touchmove', onTouchMove);
             window.removeEventListener('mouseup', onUp);
+            window.removeEventListener('touchend', onUp);
             saveHistoryState();
             renderCanvas();
         }
