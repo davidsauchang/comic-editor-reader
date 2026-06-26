@@ -931,3 +931,99 @@ body {
     margin-left: 0 !important; /* Managed cleanly via flex gap now */
     flex-shrink: 0;
 }
+
+/* --- Support Section Base State (Dark & Almost Invisible) --- */
+.support-card {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2rem 1.5rem;
+    background: #121214; /* Deep dark background */
+    border: 1px solid #222225;
+    border-radius: 12px;
+    text-align: center;
+    
+    /* Smooth transition for the container fade */
+    transition: all 0.4s ease-in-out;
+    cursor: pointer;
+}
+
+/* Base text setups inside the un-hovered dark card */
+.support-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    color: #333336; /* Very dim gray text */
+    transition: color 0.4s;
+}
+.support-card .support-desc {
+    margin: 0 0 1.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #252528; /* Blended dark text */
+    transition: color 0.4s;
+}
+.support-card .support-footer {
+    margin: 1rem 0 0 0;
+    font-size: 0.8rem;
+    color: #1a1a1c; /* Almost completely invisible footer text */
+    transition: color 0.4s;
+}
+
+/* Base button structures scaled down in opacity */
+.support-buttons a {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    opacity: 0.08; /* Buttons are structural ghosts until hover */
+    transition: all 0.4s ease-in-out;
+}
+.btn-coffee {
+    background: #FF813F;
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 129, 63, 0);
+}
+.btn-paypal {
+    background: #0070BA;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 112, 186, 0);
+}
+
+
+/* --- HOVER ACTIVATION LAYER (Brighter White & Vivid Accents) --- */
+.support-card:hover {
+    background: #ffffff; /* Snaps to crisp white */
+    border-color: #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Light up the header text and descriptions */
+.support-card:hover h3 {
+    color: #1a1a1a; /* Bold crisp black titles */
+}
+.support-card:hover .support-desc {
+    color: #4a5568; /* Clean readable grey subtext */
+}
+.support-card:hover .support-footer {
+    color: #718096; /* Mid tone safe notice text */
+}
+
+/* Reveal buttons to full intensity */
+.support-card:hover .support-buttons a {
+    opacity: 1; /* Instantly solid visible shapes */
+}
+.support-card:hover .btn-coffee {
+    box-shadow: 0 4px 12px rgba(255, 129, 63, 0.3);
+}
+.support-card:hover .btn-paypal {
+    box-shadow: 0 4px 12px rgba(0, 112, 186, 0.3);
+}
+
+/* Individual button interaction enhancement when active */
+.support-buttons a:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}

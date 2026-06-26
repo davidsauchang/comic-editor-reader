@@ -7,7 +7,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-    
+    <script src="https://www.paypal.com/sdk/js?client-id=BAA3xWpdFogetmIuyGO7_wbULjx88B6qeYra6L7v0au5Em29JvR_88Zf2NsbemELWB3KrmDO5oygjA00VU&components=hosted-buttons&disable-funding=venmo&currency=NZD"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -73,7 +73,67 @@
 <div class="sidebar-credits">
         Created by <span class="credits-name">David Sau Chang</span>
     </div>
-
+    <!-- SUPPORT SECTION - Place this anywhere in your HTML -->
+<!-- Support Section with Both Platforms -->
+<section id="support" style="
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 2rem 1.5rem;
+  background: #1e1e24;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #3a3a3b;
+">
+  <h3 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.3rem;">
+     Support This Project
+  </h3>
+  <p style="margin: 0 0 1.5rem 0; color: #333; font-size: 0.95rem; line-height: 1.5;">
+    This tool is and always will be <strong>completely free</strong>. 
+    Choose your preferred way to support future development.
+  </p>
+  
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
+    <!-- Buy Me a Coffee -->
+    <a href="https://buymeacoffee.com/paperuniverse" 
+       target="_blank" 
+       style="display: inline-block; 
+              background: #FF813F; 
+              color: white; 
+              padding: 12px 30px; 
+              border-radius: 8px; 
+              text-decoration: none; 
+              font-weight: bold; 
+              font-size: 1rem;
+              box-shadow: 0 2px 8px rgba(255, 129, 63, 0.3);
+              transition: all 0.2s;
+              border: none;
+              cursor: pointer;">
+       Buy Me a Coffee
+    </a>
+    
+    <!-- PayPal -->
+    <a href="https://www.paypal.com/ncp/payment/Q8S7ELVQZND22" 
+       target="_blank" 
+       style="display: inline-block; 
+              background: #0070BA; 
+              color: white; 
+              padding: 12px 30px; 
+              border-radius: 8px; 
+              text-decoration: none; 
+              font-weight: bold; 
+              font-size: 1rem;
+              box-shadow: 0 2px 8px rgba(0, 112, 186, 0.3);
+              transition: all 0.2s;
+              border: none;
+              cursor: pointer;">
+       PayPal
+    </a>
+  </div>
+  
+  <p style="margin: 1rem 0 0 0; color: #999; font-size: 0.8rem;">
+    One-time or recurring • Fast & secure
+  </p>
+</section>
     </div>
 <!-- workspace contains the main canvas area and the top toolbar for project management, view toggles, and zoom controls -->
     <div id="workspace">
@@ -277,5 +337,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="app.js?v=1.0.1"></script>
 </body>
 </html>
