@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- ============================================================
+     PWA META TAGS
+     ============================================================ -->
+
+<!-- Basic PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e1e24">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MangaMesh">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Icons for different platforms --
+<link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72.png"> 
+<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
+<link rel="icon" type="image/png" sizes="128x128" href="/icons/icon-128.png">
+<link rel="icon" type="image/png" sizes="144x144" href="/icons/icon-144.png">
+<link rel="icon" type="image/png" sizes="152x152" href="/icons/icon-152.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="384x384" href="/icons/icon-384.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png"> -->
+
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+<!-- Microsoft Tile -->
+<meta name="msapplication-TileImage" content="/icons/icon-144.png">
+<meta name="msapplication-TileColor" content="#1e1e24">
+
+<!-- ============================================================
+     END PWA META TAGS
+     ============================================================ -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MangaMesh</title>
@@ -12,29 +44,42 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+
 </head>
+<!-- END OF HEAD -->
+<!-- BEGINNING OF BODY -->
 <body>
-    <!-- LEFT SIDEBAR FOR PAGE CONTROLS, ASSET INSERTION, GRID OPTIONS, AND EXPORT SETTINGS -->
+    <!-- ============================================================
+    SIDEBAR LEFT
+    ============================================================ -->
     <div id="sidebar">
+        <input type="checkbox" id="toggle-sidebar-left" class="sidebar-toggle-check" hidden>
+        <label for="toggle-sidebar-left" class="sidebar-toggle-btn tab-left" title="Toggle Page Controls">
+            <span class="arrow-icon">◀</span>
+        </label>
+
+        <!-- SIDEBAR LEFT CONTAINER -->
         <div class="brand-logo-container">
-    <div class="mangamesh-logo">
-        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 20V4l6 6" />
-            <path d="M20 20V4l-6 6" />
-            <path d="M10 10h4" />
-            <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
-        </svg>
-        <span class="logo-text">Manga<span class="logo-accent">Mesh</span></span>
-    </div>
-</div>
+            <div class="mangamesh-logo">
+                <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 20V4l6 6" />
+                    <path d="M20 20V4l-6 6" />
+                    <path d="M10 10h4" />
+                    <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+                </svg>
+                <span class="logo-text">Manga<span class="logo-accent">Mesh</span></span>
+            </div>
+        </div>
+        
         <div class="section-box">
             <h3>Page Layouts</h3>
             <select id="pageSizeSelect" class="btn" style="background:#222; text-align:left;">
-        <option value="414,896">Vertical Webtoon (414x896)</option>
-        <option value="800,1200">A4 Portrait (800x1200)</option>
-        <option value="1200,800">A4 Landscape (1200x800)</option>
-    </select>
+                <option value="414,896">Vertical Webtoon (414x896)</option>
+                <option value="800,1200">A4 Portrait (800x1200)</option>
+                <option value="1200,800">A4 Landscape (1200x800)</option>
+            </select>
             <button class="btn" id="btnAddPage">+ Add Page</button>
             <button class="btn" id="btnDeletePage">Delete Page</button>
         </div>
@@ -48,180 +93,133 @@
         </div>
 
         <div class="section-box">
-    <h3>Grid & Snapping</h3>
-    <div class="prop-group" style="margin-bottom: 12px;">
-        <label>Background Style</label>
-        <select id="gridStyleSelect" class="btn" style="background:#222; margin:0; width:100%; text-align:left;">
-            <option value="none">Blank White</option>
-            <option value="grid">Blueprint Grid</option>
-            <option value="dots">Dot Matrix</option>
-        </select>
-    </div>
-    
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
-        <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
-            <input type="checkbox" id="chkSnapToGrid" style="width: 16px; height: 16px; cursor: pointer;">
-            Snap to 20px Grid
-        </label>
-        
-        <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
-            <input type="checkbox" id="btnToggleMargin" style="width: 16px; height: 16px; cursor: pointer;" checked>
-            Show Inner Margin Guides
-        </label>
-    </div>
-</div>
-<div class="sidebar-credits">
-        Created by <span class="credits-name">David Sau Chang</span>
-    </div>
-    <!-- SUPPORT SECTION - Place this anywhere in your HTML -->
-<!-- Support Section with Both Platforms -->
-<section id="support" style="
-  max-width: 600px;
-  margin: 3rem auto;
-  padding: 2rem 1.5rem;
-  background: #1e1e24;
-  border-radius: 12px;
-  text-align: center;
-  border: 1px solid #3a3a3b;
-">
-  <h3 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.3rem;">
-     Support This Project
-  </h3>
-  <p style="margin: 0 0 1.5rem 0; color: #333; font-size: 0.95rem; line-height: 1.5;">
-    This tool is and always will be <strong>completely free</strong>. 
-    Choose your preferred way to support future development.
-  </p>
-  
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;">
-    <!-- Buy Me a Coffee -->
-    <a href="https://buymeacoffee.com/paperuniverse" 
-       target="_blank" 
-       style="display: inline-block; 
-              background: #FF813F; 
-              color: white; 
-              padding: 12px 30px; 
-              border-radius: 8px; 
-              text-decoration: none; 
-              font-weight: bold; 
-              font-size: 1rem;
-              box-shadow: 0 2px 8px rgba(255, 129, 63, 0.3);
-              transition: all 0.2s;
-              border: none;
-              cursor: pointer;">
-       Buy Me a Coffee
-    </a>
-    
-    <!-- PayPal -->
-    <a href="https://www.paypal.com/ncp/payment/Q8S7ELVQZND22" 
-       target="_blank" 
-       style="display: inline-block; 
-              background: #0070BA; 
-              color: white; 
-              padding: 12px 30px; 
-              border-radius: 8px; 
-              text-decoration: none; 
-              font-weight: bold; 
-              font-size: 1rem;
-              box-shadow: 0 2px 8px rgba(0, 112, 186, 0.3);
-              transition: all 0.2s;
-              border: none;
-              cursor: pointer;">
-       PayPal
-    </a>
-  </div>
-  
-  <p style="margin: 1rem 0 0 0; color: #999; font-size: 0.8rem;">
-    One-time or recurring • Fast & secure
-  </p>
-</section>
-    </div>
-<!-- workspace contains the main canvas area and the top toolbar for project management, view toggles, and zoom controls -->
-    <div id="workspace">
-    <div id="toolbar">
-        
-        <div class="toolbar-group-left">
-            <label for="btnLoadProject" class="btn-icon" title="Load Project File (.json)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    <path d="M12 11v6M9 14l3-3 3 3"></path>
-                </svg>
-            </label>
-            <input type="file" id="btnLoadProject" accept=".json" style="display: none;" />
-            
-            <button class="btn-icon" id="btnSaveProject" title="Save Project File (.json)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
-                </svg>
-            </button>
-            
-            <div class="toolbar-divider"></div>
-            
-            <button class="btn-icon" id="btnExportImages" title="Export All Pages (ZIP PNG)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                </svg>
-            </button>
-            
-            <button class="btn-icon" id="btnExportPDF" title="Compile & Export Document (PDF)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-            </button>
-
-            <div class="toolbar-divider"></div>
-
-            <button id="btnUndo" class="btn-icon" title="Undo (Ctrl+Z)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v6h6" />
-                    <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" />
-                </svg>
-            </button>
-
-            <button id="btnRedo" class="btn-icon" title="Redo (Alt+Shift+Z)">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 7v6h-6" />
-                    <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" />
-                </svg>
-            </button>
-        </div>
-        
-        <div class="toolbar-group-center">
-            <div class="view-toggle-segmented">
-                <button class="btn-segment active" id="btnSingleView">Single View</button>
-                <button class="btn-segment" id="btnScrollView">Scroll View</button>
+            <h3>Grid & Snapping</h3>
+            <div class="prop-group" style="margin-bottom: 12px;">
+                <label>Background Style</label>
+                <select id="gridStyleSelect" class="btn" style="background:#222; margin:0; width:100%; text-align:left;">
+                    <option value="none">Blank White</option>
+                    <option value="grid">Blueprint Grid</option>
+                </select>
             </div>
             
-            <select id="zoomSelect" class="toolbar-select zoom-dropdown" onchange="applyZoom(parseFloat(this.value))">
-                <option value="0.5">50%</option>
-                <option value="0.75">75%</option>
-                <option value="1" selected>100%</option>
-                <option value="1.5">150%</option>
-            </select>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="chkSnapToGrid" style="width: 16px; height: 16px; cursor: pointer;">
+                    Snap to 20px Grid
+                </label>
+                
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="btnToggleMargin" style="width: 16px; height: 16px; cursor: pointer;" checked>
+                    Show Inner Margin Guides
+                </label>
+            </div>
         </div>
-        
+
+        <!-- ✅ Trigger: Created by David Sau Chang (INSIDE sidebar, at the bottom) -->
+        <div class="sidebar-credits" id="creditTrigger" style="cursor: pointer;">
+            Created by <span class="credits-name">David Sau Chang</span>
+        </div>
+
+    </div>  <!-- ✅ END OF SIDEBAR -->
+
+    <!-- ============================================================
+         WORKSPACE + TOOLBAR
+         ============================================================ -->
+    <div id="workspace">
+        <!-- TOP TOOLBAR -->
+        <div id="toolbar">
+            <div class="toolbar-group-left">
+                <button class="btn-icon" id="btnUndo" title="Undo (Ctrl+Z)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                </button>
+                <button class="btn-icon" id="btnRedo" title="Redo (Ctrl+Y)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                </button>
+                <div class="toolbar-divider"></div>
+                <button class="btn-icon" id="btnSaveProject" title="Save Project (.json)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+                <label class="btn-icon" for="btnLoadProject" title="Load Project (.json)">
+                    <input type="file" id="btnLoadProject" accept=".json,application/json" style="display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </label>
+                <div class="toolbar-divider"></div>
+                <button class="btn-icon" id="btnExportPDF" title="Export as PDF">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </button>
+                <button class="btn-icon" id="btnExportImages" title="Export as Images">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
+            </div>
+
+            <div class="toolbar-group-center">
+                <div class="view-toggle-segmented">
+                    <button class="btn-segment active" id="btnSingleView">Single</button>
+                    <button class="btn-segment" id="btnScrollView">Scroll</button>
+                </div>
+                <select id="zoomSelect" class="toolbar-select zoom-dropdown" title="Zoom Level">
+                    <option value="0.25">25%</option>
+                    <option value="0.5">50%</option>
+                    <option value="0.75">75%</option>
+                    <option value="1" selected>100%</option>
+                    <option value="1.25">125%</option>
+                    <option value="1.5">150%</option>
+                    <option value="2">200%</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- CANVAS HOST -->
+        <div id="canvas-container">
+            <div id="pageCanvas"></div>
+        </div>
+    </div>  <!-- ✅ END OF WORKSPACE -->
+
+    <!-- ============================================================
+         SUPPORT MODAL — Easter Egg (OUTSIDE sidebar)
+         ============================================================ -->
+
+    <!-- Support Modal (Hidden by default) -->
+<div id="supportOverlay" class="support-overlay" style="display:none;"></div>
+<div id="supportModal" class="support-modal" style="display: none;">
+    <div class="support-modal-content">
+        <button class="support-modal-close" id="supportModalClose">✕</button>
+        <div class="support-modal-body">
+            <span class="support-icon">☕</span>
+            <h3>Support This Project</h3>
+            <p class="support-desc">
+                This tool is and always will be <strong>completely free</strong>.
+            </p>
+            <div class="support-divider"></div>
+            <p class="support-sub-desc">
+                If MangaMesh saves you time and helps you create,<br>
+                consider supporting future development.
+            </p>
+            <div class="support-buttons">
+                <a href="https://buymeacoffee.com/paperuniverse" target="_blank" class="btn-coffee">
+                    ☕ Buy Me a Coffee
+                </a>
+                <a href="https://www.paypal.com/ncp/payment/Q8S7ELVQZND22" target="_blank" class="btn-paypal">
+                    💙 PayPal
+                </a>
+            </div>
+            <p class="support-footer">
+                <span>✦</span> One-time or recurring <span>✦</span> Fast & secure
+            </p>
+        </div>
     </div>
-    
-    <div id="canvas-container">
-        <div id="pageCanvas"></div>
-    </div>
-    
-</div>
-    <!-- RIGHT SIDEBAR FOR LAYER CONTROL, PAGE ORGANIZATION, AND PROPERTIES PANEL -->
+</div>    
+
+    <!-- ============================================================
+         RIGHT SIDEBAR
+         ============================================================ -->
     <div id="sidebar-right">
         <input type="checkbox" id="toggle-sidebar-right" class="sidebar-toggle-check" hidden>
-    
-    <label for="toggle-sidebar-right" class="sidebar-toggle-btn" title="Toggle Sidebar">
-        <span class="arrow-icon">▶</span>
-    </label>
-        
-        
+        <label for="toggle-sidebar-right" class="sidebar-toggle-btn tab-right" title="Toggle Properties Panel">
+            <span class="arrow-icon">▶</span>
+        </label>
+
+        <div class="sidebar-scroll">
         <div class="section-box">
             <h3>Organize Pages</h3>
             <div id="pageList"></div>
@@ -244,18 +242,18 @@
                 <label for="propRotation">Rotation (Deg)</label>
                 <input type="range" id="propRotation" min="-180" max="180" value="0">
                 <input type="number" id="propRotationNum" min="-180" max="180" value="0" style="width: 50px; margin-left: 5px;">
-    </div>
+            </div>
 
             <div id="contentPropGroup" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px;">
                 <div class="prop-group">
-    <label>Bubble Style</label>
-    <select id="bubbleStyleSelect">
-    <option value="vector">Speech Balloon (Sharp Tail)</option>
-    <option value="thought">Thought Bubble (Ovals)</option>
-    <option value="classic">Classic Box Style</option>
-    <option value="title">Transparent Text Title</option>
-</select>
-</div>
+                    <label>Bubble Style</label>
+                    <select id="bubbleStyleSelect">
+                        <option value="vector">Speech Balloon (Sharp Tail)</option>
+                        <option value="thought">Thought Bubble (Ovals)</option>
+                        <option value="classic">Classic Box Style</option>
+                        <option value="title">Transparent Text Title</option>
+                    </select>
+                </div>
                 <div class="prop-group">
                     <label>Text Content</label>
                     <textarea id="bubbleTextModifier" rows="3"></textarea>
@@ -292,13 +290,13 @@
             
             <div class="property-group">
                 <label for="propFontColor">Font Color</label>
-                        <select id="propFontColor" class="toolbar-select" style="width: 100%; cursor: pointer;">
-                            <option value="#000000">Standard Black (#000000)</option>
-                            <option value="#e53935">Crimson Screaming (#E53935)</option>
-                            <option value="#ffb300">Shonen Gold (#FFB300)</option>
-                            <option value="#00acc1">Cyberpunk Cyan (#00ACC1)</option>
-                            <option value="#43a047">Poison Magic Green (#43A047)</option>
-                        </select>
+                <select id="propFontColor" class="toolbar-select" style="width: 100%; cursor: pointer;">
+                    <option value="#000000">Standard Black (#000000)</option>
+                    <option value="#e53935">Crimson Screaming (#E53935)</option>
+                    <option value="#ffb300">Shonen Gold (#FFB300)</option>
+                    <option value="#00acc1">Cyberpunk Cyan (#00ACC1)</option>
+                    <option value="#43a047">Poison Magic Green (#43A047)</option>
+                </select>
             </div>
 
             <div id="panelStyleGroup" style="display: none; flex-direction: column; gap: 4px; margin-top: 12px; margin-bottom: 12px;">
@@ -312,17 +310,20 @@
                     <input type="checkbox" id="chkDistortMode"> 
                     Perspective Distortion Mode
                 </label>
-            
             </div>
+            </div>
+            
             <div class="section-box">
-            <h3>Layer Control</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
-                <button class="btn" id="layer-forward" style="margin:0; font-size:11px; padding:8px 4px;">Forward</button>
-                <button class="btn" id="layer-backward" style="margin:0; font-size:11px; padding:8px 4px;">Backward</button>
-                <button class="btn" id="layer-top" style="margin:0; font-size:11px; padding:8px 4px;">To Front</button>
-                <button class="btn" id="layer-bottom" style="margin:0; font-size:11px; padding:8px 4px;">To Back</button>
+                <h3>Layer Control</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+                    <button class="btn" id="layer-forward" style="margin:0; font-size:11px; padding:8px 4px;">Forward</button>
+                    <button class="btn" id="layer-backward" style="margin:0; font-size:11px; padding:8px 4px;">Backward</button>
+                    <button class="btn" id="layer-top" style="margin:0; font-size:11px; padding:8px 4px;">To Front</button>
+                    <button class="btn" id="layer-bottom" style="margin:0; font-size:11px; padding:8px 4px;">To Back</button>
+                </div>
             </div>
         </div>
+    </div>  <!-- ✅ END OF RIGHT SIDEBAR -->
 
     <div id="cropModal">
         <div class="modal-content">
@@ -336,7 +337,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script src="app.js?v=1.0.1"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
