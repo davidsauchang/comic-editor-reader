@@ -1,0 +1,1432 @@
+/* ==========================================================================
+   COMIC LAYOUT CREATOR — STYLESHEET (CLEANED & UNIFIED)
+   ========================================================================== */
+/* Import curated, high-performance free comic fonts directly from Google */
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:ital,wght@0,400;0,700;1,400&family=Kalam:wght@400;700&family=Permanent+Marker&family=Luckiest+Guy&display=swap');
+
+:root {
+    --bg-main:         #1e1e24;
+    --bg-sidebar:      #2a2a32;
+    --bg-workspace:    #121214;
+    --bg-panel:        #222;
+    --bg-input:        #1e1e24;
+    --accent:          #4a9eff;
+    --text-light:      #f5f5f5;
+    --text-muted:      #aaa;
+    --text-label:      #999;
+    --border-subtle:   #3a3a42;
+    --border-input:    #444;
+    --shadow-page:     0 10px 30px rgba(0, 0, 0, 0.5);
+    --sidebar-width:   260px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+}
+
+/* --- SIDEBAR SYSTEM ARCHITECTURE --- */
+#sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-subtle);
+    overflow-y: auto;
+    padding: 14px;
+    gap: 14px;
+}
+.section-box {
+    background: var(--bg-panel);
+    border-radius: 6px;
+    padding: 14px;
+    border: 1px solid var(--border-subtle);
+}
+.section-box h3 {
+    margin: 0 0 12px 0;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 4px;
+}
+
+/* --- INTERACTIVE CONTROL INTERFACES --- */
+.btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: #3a3a45;
+    border: 1px solid var(--border-input);
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+    transition: background 0.15s ease;
+}
+.btn:hover { background: #4a4a5a; }
+.btn.active { background: var(--accent); border-color: var(--accent); }
+
+.page-item {
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.2);
+    margin-bottom: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+.page-item.active { background: var(--accent); color: white; }
+
+/* --- PROPERTY PANEL GRID SYSTEM --- */
+.prop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+.prop-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+.prop-group label {
+    font-size: 11px;
+    color: var(--text-label);
+}
+.prop-group input[type="number"], .prop-group textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    color: white;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+}
+.prop-group textarea { resize: vertical; }
+.prop-group input:focus { border-color: var(--accent); outline: none; }
+
+/* ==========================================================================
+   CLEANED & UNIFIED ACTIVE WORKSPACE & TOOLBAR SYSTEM
+   ========================================================================== */
+
+/* --- ACTIVE VIEWPORT WORKSPACE --- */
+#workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #111; /* Clean flat dark background layout */
+    overflow: hidden;
+}
+
+/* --- TOOLBAR MASTER CONTAINER --- */
+#toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Aligns child groups chronologically starting from the left */
+    padding: 0 16px;
+    height: 48px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #2d2d2d;
+    box-sizing: border-box;
+    user-select: none;
+    position: relative; /* Base anchor for absolute center placement */
+    flex-shrink: 0;
+}
+
+/* --- FLEX ARRANGEMENT GROUPS --- */
+
+/* Left Anchor: Drops dropdown, dividers, and action buttons in a tight clean line */
+.toolbar-group-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Center Anchor: Locked dead-center of the toolbar layout */
+.toolbar-group-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* --- UI FORM INPUTS & SELECT DROPDOWNS --- */
+.toolbar-select {
+    background-color: #262626;
+    color: #e0e0e0;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    height: 32px;
+}
+.toolbar-select:hover {
+    background-color: #2d2d2d;
+    border-color: #4a4a4a;
+}
+
+/* --- STRUCTURAL SEPARATORS --- */
+.toolbar-divider {
+    width: 1px;
+    height: 20px;
+    background-color: #333;
+    margin: 0 6px;
+}
+
+#canvas-container {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    scroll-behavior: smooth;
+}
+
+/* --- CANVAS ENGINE MARKERS --- */
+#pageCanvas, .scroller-page {
+    position: relative;
+    background-color: #ffffff !important;
+    box-shadow: var(--shadow-page);
+    will-change: transform;
+    transition: transform 0.1s ease-out;
+    overflow: hidden;
+}
+#pageCanvas {
+    margin-top: 10px;
+}
+
+.pages-scroller {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 80px;
+}
+.scroller-page {
+    flex-shrink: 0;
+}
+.scroller-page.active-page-view {
+    outline: 3px solid #00bcff; /* Or your preferred neon/accent UI color */
+    box-shadow: 0 0 20px rgba(0, 188, 255, 0.2);
+}
+/* --- ART IMAGE PANELS --- */
+/* If your CSS looks like this: */
+.comic-panel {
+    position: absolute;
+    overflow: hidden;
+    /* border: 2px solid #000000; <--- REMOVE OR COMMENT THIS OUT */
+}
+
+/* Alternative: Clean up the border completely if distortion handles are active */
+#chkDistortMode:checked ~ #workspace .comic-panel {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.comic-panel.selected { outline: 3px solid var(--accent); }
+.comic-panel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+.panel-resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--accent);
+    border: 2px solid white;
+    border-radius: 50%;
+    bottom: 2px;
+    right: 2px;
+    cursor: se-resize;
+    z-index: 99;
+}
+
+/* --- STREAMLINED EXPORT COMPATIBLE DUAL WHITE BORDER --- */
+/* --- COMPILER FLAT RENDERING FIXES --- */
+.comic-panel.has-white-border {
+    box-sizing: border-box !important;
+    border: 6px solid #ffffff !important;
+    /* Extra outlines and black shadows completely removed for export consistency */
+}
+
+/* --- OVAL SPEECH BALLOON ENGINE --- */
+.speech-box-container {
+    position: absolute;
+    cursor: move;
+    z-index: 50;
+    box-sizing: border-box;
+    overflow: visible !important;
+}
+/* --- HOVER/SELECTED STATES FOR TRANSPARENT HEADINGS --- */
+.speech-box-container.transparent-title-style {
+    background: transparent !important;
+    border: 1px dashed rgba(255, 255, 255, 0.15) !important; /* Muted guide bounds so you can still find it to drag */
+}
+
+.speech-box-container.selected.transparent-title-style {
+    border: 1px dashed var(--accent) !important; /* Highlights when clicked */
+}
+
+/* --- THE RAW TEXT STYLING --- */
+.transparent-title-style .speech-text {
+    color: #ffffff; /* Strip !important out so JavaScript can override it */
+    font-family: 'Bangers', 'Impact', system-ui, sans-serif; /* High-impact comic font choice */
+    font-size: 28px; /* Larger base size for headings */
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    
+    /* Premium comic book double-stroke text outline for readability over busy art backgrounds */
+    text-shadow: 
+        -2px -2px 0 #000,  
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         0px  3px 8px rgba(0,0,0,0.8);
+}
+
+/* --- SPEECH BALLOON VECTOR CLEANUP --- */
+.speech-svg {
+    overflow: visible !important;
+    pointer-events: none;
+}
+
+.speech-path {
+    /* Let the inline JS styling handle the solid colors explicitly to guarantee export matches browser */
+    stroke-linejoin: round;
+}
+
+.speech-text-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.speech-text {
+    pointer-events: auto;
+    text-align: center;
+    font-family: 'Bangers', 'Impact', sans-serif;
+    font-size: 18px;
+    color: #000000;
+    word-break: break-word;
+    outline: none;
+}
+.speech-text {
+    width: 100%;
+    display: block;
+    word-break: break-word;
+    font-family: 'Arial Black', Gadget, sans-serif;
+    font-size: 14px;
+    color: #000000;
+    line-height: 1.2;
+    outline: none;
+    border: none;
+}
+
+/* --- DRAGGABLE INTERACTIVE ANCHORS --- */
+.tail-control-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ff4757;
+    border: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-6px, -6px);
+    cursor: pointer;
+    z-index: 101;
+}
+
+/* --- VINTAGE NARRATION BOX STYLE --- */
+.classic-box-style {
+    background: #ffffff !important;
+    border: 3px solid #000000 !important;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.15);
+}
+.speech-box-container.selected .classic-box-style {
+    border-color: var(--accent) !important;
+}
+
+/* --- CANVAS RENDERING TEXTURES (PERCENTAGE ALIGNED) --- */
+.texture-grid {
+    background-color: #ffffff !important;
+    background-image: 
+        linear-gradient(rgba(74, 159, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74, 159, 255, 0.1) 1px, transparent 1px) !important;
+    
+    /* Fixed square cells: 20px × 20px */
+    background-size: 20px 20px !important;
+    
+    /* Align to margin position */
+    background-position: 40px 40px !important;
+    background-repeat: repeat;
+    background-clip: padding-box !important;
+}
+
+/* --- CORE UTILITY SPECIFICATIONS --- */
+.canvas-page-marker {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    background: rgba(74, 159, 255, 0.2);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 9;
+}
+.margin-guide {
+    position: absolute;
+    border: 2px dashed rgba(74, 159, 255, 0.3);
+    pointer-events: none;
+    z-index: 4;
+}
+#cropModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+#cropModal.active { visibility: visible; opacity: 1; pointer-events: auto; }
+.modal-content { background: var(--bg-panel); padding: 20px; border-radius: 8px; width: 80vw; max-width: 600px; display: flex; flex-direction: column; gap: 14px; }
+.crop-area { height: 400px; background: #000; }
+/* Perspective Vector Point Draggers */
+.panel-corner-handle.red-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #ff3333; /* Bright red to distinguish from resizing links */
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    transform: translate(-6px, -6px); /* Centers the circle directly on the pixel corner */
+    cursor: move;
+    z-index: 100;
+}
+
+#sidebar {
+    width: 260px;
+    min-width: 260px;
+    height: 100%;
+    background-color: #1a1a1a;
+    border-right: 1px solid #2d2d2d;
+    overflow-y: auto;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Container rules with built-in transition animation */
+#sidebar-right {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevents double scrollbars on the parent container */
+}
+
+/* The actual inner panel container containing text / elements */
+.sidebar-content-wrapper {
+    width: 260px; /* Locks internal sizes so content doesn't crush during close */
+    padding: 10px;
+    box-sizing: border-box;
+    transition: opacity 0.2s ease;
+    opacity: 1;
+}
+
+/* Optional: Slim, styled scrollbar matching dark UI */
+.sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+/* --- THE FUNCTIONAL MAGIC --- */
+
+/* 1. When checkbox is ticked, collapse the sidebar layout shell down to 0 */
+.sidebar-toggle-check:checked ~ .sidebar-content-wrapper {
+    opacity: 0;
+    pointer-events: none; /* Stops phantom clicks while hidden */
+}
+
+#sidebar-right:has(.sidebar-toggle-check:checked) {
+    width: 0px;
+    min-width: 0px;
+    border-left: 1px solid transparent; /* Hides hard lines when collapsed */
+}
+
+/* 2. Flip the arrow icon graphic to point backwards when collapsed */
+.sidebar-toggle-check:checked + .sidebar-toggle-btn .arrow-icon {
+    transform: rotate(180deg);
+}
+.arrow-icon {
+    display: inline-block;
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+
+/* Modern, Minimalist Icon-Only Button State Styling */
+.btn-icon, label.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s ease;
+}
+
+.btn-icon svg, label.btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Hover and Interaction Physics states */
+.btn-icon:hover, label.btn-icon:hover {
+    color: #ffffff;
+    background-color: #2a2a2a;
+    border-color: #3d3d3d;
+}
+
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+
+/* Custom width for the new Zoom selector */
+.zoom-dropdown {
+    width: 75px;
+    text-align: center;
+}
+
+/* Segmented View Toggle Button Strip */
+.view-toggle-segmented {
+    display: flex;
+    background-color: #262626;
+    padding: 2px;
+    border-radius: 6px;
+    border: 1px solid #3d3d3d;
+}
+.btn-segment {
+    background: transparent;
+    border: none;
+    color: #a0a0a0;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+.btn-segment:hover {
+    color: #fff;
+}
+.btn-segment.active {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+/* Uniform Clean Line Icon Style */
+.btn-icon, label.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #b3b3b3;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-icon svg, label.btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
+.btn-icon:hover, label.btn-icon:hover {
+    color: #ffffff;
+    background-color: #2a2a2a;
+    border-color: #3d3d3d;
+}
+.btn-icon:active {
+    transform: scale(0.95);
+}
+
+
+/* Update your sidebar page collection wrapper style */
+#pageList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    /* THE FIX: Cap layout size and allow internal vertical sliding */
+    max-height: 120px; /* Adjust this value to match exactly 4 of your page thumbnail blocks */
+    overflow-y: auto;  /* Hides scrollbar until a 5th item pushes it past max-height */
+    
+    /* Clean UI padding adjustments */
+    padding-right: 4px; 
+    box-sizing: border-box;
+}
+
+/* Optional premium styling to make the scrollbar minimal and match a dark theme */
+#pageList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#pageList::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+
+#pageList::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+#pageList::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+/* Branding Header Container */
+.brand-logo-container {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #2d2d2d;
+    box-sizing: border-box;
+}
+
+/* Master Logo Flex Layout Alignment */
+.mangamesh-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+
+/* The Animated Vector Mesh Icon */
+.logo-icon {
+    width: 20px;
+    height: 20px;
+    color: #3b82f6; /* Electric Neon Blue Accent */
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Micro-interaction: Subtly pop the mesh icon on sidebar hover */
+.brand-logo-container:hover .logo-icon {
+    transform: scale(1.1) rotate(-3deg);
+}
+
+/* Typography Engine */
+.logo-text {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: #ffffff;
+}
+
+/* "Mesh" Structural Accent Break */
+.logo-accent {
+    color: #999999; /* Soft tech-gray break so it's readable but minimal */
+    font-weight: 400;
+    margin-left: 1px;
+}
+/* Sidebar Credits Alignment */
+.sidebar-credits {
+    margin-top: auto; /* Pushes the signature to the absolute bottom of a flex sidebar */
+    padding: 16px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    color: #555555; /* Dark muted gray to keep it low-profile and premium */
+    border-top: 1px solid #232323; /* Subtle dividing hairline separation */
+    text-align: left;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+/* Subtle hover interaction to light up your signature */
+.sidebar-credits:hover {
+    color: #888888;
+}
+
+.sidebar-credits .credits-name {
+    font-weight: 500;
+    color: #777777;
+    transition: color 0.2s ease;
+}
+
+.sidebar-credits:hover .credits-name {
+    color: #3b82f6; /* Electric accent shift when hovered */
+}
+/* ==========================================
+   MANGAMESH PREMIUM DARK MODE SCROLLBARS
+   ========================================== */
+
+/* 1. Modern Standard (Firefox 64+) */
+* {
+    scrollbar-width: thin;          /* Options: auto, thin, none */
+    scrollbar-color: #333333 #1a1a1a; /* [Thumb Color] [Track Color] */
+}
+
+/* 2. WebKit Engines (Chrome, Safari, Edge, Opera) */
+
+/* The overall scrollbar track width/height */
+::-webkit-scrollbar {
+    width: 6px;  /* Vertical scrollbar width */
+    height: 6px; /* Horizontal scrollbar height */
+}
+
+/* The structural background pathway behind the thumb */
+::-webkit-scrollbar-track {
+    background-color: #1a1a1a; 
+    border-radius: 4px;
+}
+
+/* The actual draggable sliding handle */
+::-webkit-scrollbar-thumb {
+    background-color: #333333; 
+    border-radius: 4px;
+    border: 1px solid #1a1a1a; /* Creates a clean faux padding effect */
+    transition: background-color 0.2s ease;
+}
+
+/* Hover feedback states when active */
+::-webkit-scrollbar-thumb:hover {
+    background-color: #444444; 
+}
+
+/* Click state physics response */
+::-webkit-scrollbar-thumb:active {
+    background-color: #555555; 
+}
+
+/* The tiny square corner intersection where vertical and horizontal bars meet */
+::-webkit-scrollbar-corner {
+    background-color: #1a1a1a;
+}
+
+/* ==========================================================================
+   PROPERTIES PANEL REFINEMENTS (ROTATION SLIDER & ALIGNMENT FIXES)
+   ========================================================================== */
+
+/* Fix layout spacing inside the properties panel */
+#propertiesPanel .prop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#propertiesPanel .prop-group,
+#propertiesPanel .property-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#propertiesPanel label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-label);
+}
+
+/* Base style for all numerical inputs & drop-down menus */
+#propertiesPanel input[type="number"],
+#propertiesPanel select {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-input);
+    color: var(--text-light);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#propertiesPanel input[type="number"]:focus,
+#propertiesPanel select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+/* Custom Dropdown Styling for the Bubble Style Select */
+#bubbleStyleSelect {
+    width: 100%;
+    cursor: pointer;
+    appearance: none; /* Strips default native OS arrow */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaaaaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    padding-right: 30px !important;
+}
+
+/* --- ROTATION SLIDER FLEX WRAPPER --- */
+#propertiesPanel .property-group {
+    margin-bottom: 12px;
+}
+
+/* Container for putting the slider and the input block side-by-side */
+#propertiesPanel .property-group:has(#propRotation) {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Creates a row arrangement specifically for the controls beneath the label */
+#propertiesPanel .property-group:has(#propRotation) label {
+    margin-bottom: 6px;
+}
+
+/* Wrapper to force alignment of the range bar alongside the text input */
+#propertiesPanel .property-group .slider-row-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Custom Horizontal Track */
+#propRotation {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-grow: 1; /* Lets track fill all available remaining room */
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    outline: none;
+    cursor: pointer;
+}
+
+/* Slider Blue Control Thumb: WebKit (Chrome, Safari, Edge) */
+#propRotation::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-sidebar);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+    cursor: grab;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+#propRotation::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.2);
+    background: #ffffff;
+}
+
+/* Slider Blue Control Thumb: Firefox */
+#propRotation::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-sidebar);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+    cursor: grab;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+#propRotation::-moz-range-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.2);
+    background: #ffffff;
+}
+
+/* Force specific parameters for the side numbers indicator */
+#propRotationNum {
+    width: 60px !important;
+    text-align: center;
+    margin-left: 0 !important; /* Managed cleanly via flex gap now */
+    flex-shrink: 0;
+}
+
+/* --- Support Section Base State (Dark & Almost Invisible) --- */
+.support-card {
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 2rem 1.5rem;
+    background: #121214; /* Deep dark background */
+    border: 1px solid #222225;
+    border-radius: 12px;
+    text-align: center;
+    
+    /* Smooth transition for the container fade */
+    transition: all 0.4s ease-in-out;
+    cursor: pointer;
+}
+
+/* Base text setups inside the un-hovered dark card */
+.support-card h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    color: #333336; /* Very dim gray text */
+    transition: color 0.4s;
+}
+.support-card .support-desc {
+    margin: 0 0 1.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #252528; /* Blended dark text */
+    transition: color 0.4s;
+}
+.support-card .support-footer {
+    margin: 1rem 0 0 0;
+    font-size: 0.8rem;
+    color: #1a1a1c; /* Almost completely invisible footer text */
+    transition: color 0.4s;
+}
+
+/* Base button structures scaled down in opacity */
+.support-buttons a {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    opacity: 0.08; /* Buttons are structural ghosts until hover */
+    transition: all 0.4s ease-in-out;
+}
+.btn-coffee {
+    background: #FF813F;
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 129, 63, 0);
+}
+.btn-paypal {
+    background: #0070BA;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 112, 186, 0);
+}
+
+
+/* --- HOVER ACTIVATION LAYER (Brighter White & Vivid Accents) --- */
+.support-card:hover {
+    background: #ffffff; /* Snaps to crisp white */
+    border-color: #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Light up the header text and descriptions */
+.support-card:hover h3 {
+    color: #1a1a1a; /* Bold crisp black titles */
+}
+.support-card:hover .support-desc {
+    color: #4a5568; /* Clean readable grey subtext */
+}
+.support-card:hover .support-footer {
+    color: #718096; /* Mid tone safe notice text */
+}
+
+/* Reveal buttons to full intensity */
+.support-card:hover .support-buttons a {
+    opacity: 1; /* Instantly solid visible shapes */
+}
+.support-card:hover .btn-coffee {
+    box-shadow: 0 4px 12px rgba(255, 129, 63, 0.3);
+}
+.support-card:hover .btn-paypal {
+    box-shadow: 0 4px 12px rgba(0, 112, 186, 0.3);
+}
+
+/* Individual button interaction enhancement when active */
+.support-buttons a:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+/* Style for segmented controls */
+.view-toggle-segmented .btn-segment:hover {
+    color: var(--text-light) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.view-toggle-segmented .btn-segment.active {
+    color: var(--accent) !important;
+    background: rgba(74, 158, 255, 0.15) !important; /* Highlights background slightly with accent tint */
+}
+
+/* ============================================================
+   SIDEBAR TOGGLE SYSTEM (CLEAN VERSION)
+   ============================================================ */
+
+
+
+/* Left Tab — positioned at left edge of workspace */
+.tab-left {
+    right: -20px;  /* ← Change this: position on the right edge, sticking out */
+    left: auto;    /* ← Remove the left positioning */
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+}
+
+/* Right Tab — positioned at right edge of workspace */
+.tab-right {
+    right: 280px;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+}
+
+/* Arrow icon rotation */
+.arrow-icon {
+    display: inline-block;
+    font-size: 10px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   SIDEBAR COLLAPSE (Pure CSS Toggle)
+   ============================================================ */
+
+/* LEFT SIDEBAR — Collapse when checked */
+#toggle-sidebar-left:checked ~ #sidebar {
+    width: 0px !important;
+    min-width: 0px !important;
+    padding: 0px !important;
+    overflow: hidden;
+    border-right-color: transparent;
+}
+
+/* Move left tab to the very left edge when collapsed */
+#toggle-sidebar-left:checked ~ .tab-left {
+    left: 0px;
+}
+
+/* Flip arrow when collapsed */
+#toggle-sidebar-left:checked ~ .tab-left .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* RIGHT SIDEBAR — Collapse when checked */
+#toggle-sidebar-right:checked ~ #sidebar-right {
+    width: 0px !important;
+    min-width: 0px !important;
+    padding: 0px !important;
+    overflow: hidden;
+    border-left-color: transparent;
+}
+
+/* Move right tab to the very right edge when collapsed */
+#toggle-sidebar-right:checked ~ .tab-right {
+    right: 0px;
+}
+
+/* Flip arrow when collapsed */
+#toggle-sidebar-right:checked ~ .tab-right .arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* ============================================================
+   SIDEBAR BASE STYLES (Keep these as your foundation)
+   ============================================================ */
+
+#sidebar {
+    width: var(--sidebar-width, 280px);
+    min-width: var(--sidebar-width, 280px);
+    height: 100%;
+    background-color: var(--bg-sidebar, #1a1a1a);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-subtle, #3a3a42);
+    overflow-y: auto;
+    padding: 14px;
+    gap: 14px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.3s ease,
+                border-color 0.3s ease;
+}
+
+#sidebar-right {
+    width: 280px;
+    min-width: 280px;
+    height: 100%;
+    background-color: var(--bg-sidebar, #1a1a1a);
+    border-left: 1px solid var(--border-subtle, #3a3a42);
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 14px;
+    gap: 14px;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.3s ease,
+                border-color 0.3s ease;
+}
+
+/* Scrollable content region inside the RIGHT sidebar.
+   #sidebar-right itself must stay overflow: visible so the collapse
+   toggle button can stick out past its edge; this wrapper handles the
+   vertical scrolling of the actual panel content. */
+#sidebar-right .sidebar-scroll {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ============================================================
+   🎯 NESTED INTERIOR SIDEBAR TOGGLE SYSTEM
+   ============================================================ */
+
+/* Prepare both sidebars for handling absolute button positions */
+#sidebar, #sidebar-right {
+    position: relative;
+    /* Crucial: Allow buttons to stick out past the 0px width edge */
+    overflow: visible !important; 
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s ease;
+}
+
+/* Hide inner layout content boxes dynamically when sidebar collapses */
+#sidebar:has(#toggle-sidebar-left:checked) > :not(.sidebar-toggle-btn),
+#sidebar-right:has(#toggle-sidebar-right:checked) > :not(.sidebar-toggle-btn) {
+    display: none !important;
+}
+
+/* Symmetrical Toggle Buttons */
+.sidebar-toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 48px;
+    background-color: var(--bg-sidebar);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    z-index: 1000;
+    transition: background-color 0.2s, color 0.2s, right 0.3s, left 0.3s;
+}
+
+.sidebar-toggle-btn:hover {
+    background-color: var(--bg-panel);
+    color: var(--text-light);
+}
+
+/* Tabs anchor to their sidebars and pop outward past the edge boundary */
+.tab-left {
+    right: -25px; /* Fits perfectly flush onto the outer 1px right border line */
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+}
+
+.tab-right {
+    left: -25px; /* Fits perfectly flush onto the outer 1px left border line */
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+}
+
+/* Arrow Glyph Transition Definition */
+.arrow-icon {
+    display: inline-block;
+    font-size: 10px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   COLLAPSE DRIVERS
+   ============================================================ */
+
+/* Left Sidebar Collapse Sequence */
+#sidebar:has(#toggle-sidebar-left:checked) {
+    width: 0px !important;
+    min-width: 0px !important;
+    padding: 0px !important;
+    border-right-color: transparent;
+}
+#sidebar:has(#toggle-sidebar-left:checked) .tab-left .arrow-icon {
+    transform: rotate(180deg); /* Turn arrow inward when hidden */
+}
+
+/* Right Sidebar Collapse Sequence */
+#sidebar-right:has(#toggle-sidebar-right:checked) {
+    width: 0px !important;
+    min-width: 0px !important;
+    padding: 0px !important;
+    border-left-color: transparent;
+}
+#sidebar-right:has(#toggle-sidebar-right:checked) .tab-right .arrow-icon {
+    transform: rotate(180deg); /* Turn arrow inward when hidden */
+
+
+/* ============================================================
+   SUPPORT MODAL & OVERLAY STYLING
+   ============================================================ */
+
+/* Restrain the backdrop overlay strictly inside the workspace */
+.support-overlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 260px;  /* Match your Left Sidebar width */
+    right: 280px; /* Match your Right Sidebar width */
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Center the modal inside the workspace container */
+.support-modal {
+    position: fixed;
+    top: 50%;
+    /* Calculates center point between left and right sidebars */
+    left: calc(260px + (100vw - 260px - 280px) / 2);
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    width: 90%;
+    max-width: 420px;
+    outline: none;
+    animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Main Modal Card */
+.support-modal-content {
+    position: relative;
+    background: #1e1e24;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.2);
+    padding: 32px 24px 28px;
+    text-align: center;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+/* Close Button (Top-Right) */
+.support-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: #a0a0a0;
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.support-modal-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+/* Content Elements */
+.support-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.support-icon {
+    font-size: 42px;
+    line-height: 1;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.support-modal-body h3 {
+    margin: 0 0 8px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+}
+
+.support-desc {
+    font-size: 14px;
+    color: #b0b0b8;
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+}
+
+.support-desc strong {
+    color: #4caf50; /* Subtle green highlight for "completely free" */
+    font-weight: 600;
+}
+
+.support-divider {
+    width: 60px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin: 0 auto 16px auto;
+}
+
+.support-sub-desc {
+    font-size: 13px;
+    color: #8f8f9d;
+    line-height: 1.5;
+    margin: 0 0 24px 0;
+}
+
+/* Action Buttons Container */
+.support-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.btn-coffee, .btn-paypal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-coffee:active, .btn-paypal:active {
+    transform: scale(0.98);
+}
+
+/* Buy Me a Coffee Button Style */
+.btn-coffee {
+    background: #ffdd00;
+    color: #000000;
+    box-shadow: 0 4px 14px rgba(255, 221, 0, 0.25);
+}
+
+.btn-coffee:hover {
+    background: #ffe433;
+    box-shadow: 0 6px 20px rgba(255, 221, 0, 0.4);
+}
+
+/* PayPal Button Style */
+.btn-paypal {
+    background: #0070ba;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 112, 186, 0.25);
+}
+
+.btn-paypal:hover {
+    background: #007ccf;
+    box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
+}
+
+/* Footer Note */
+.support-footer {
+    font-size: 11px;
+    color: #6c6c7d;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.support-footer span {
+    color: #ffdd00;
+    font-size: 9px;
+}
+
+/* Smooth Opening Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -46%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}}
