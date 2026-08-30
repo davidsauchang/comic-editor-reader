@@ -1,1 +1,364 @@
+/* ==========================================================================
+   MANGA MESH — MOBILE LAYOUT  (≤ 768px)
+   ==========================================================================
+      ┌────────────────────────────────────┐
+      │  #toolbar — top header (48px)      │  ← fixed brand + action icons
+      ├────────────────────────────────────┤
+      │  #workspace — canvas               │  ┌──────────────┐
+      │   (scrollable, flex: 1)            │  │  floating    │
+      │                                   │  │  #sidebar-  │
+      │                                   │  │  right panel │
+      ├────────────────────────────────────┤  └──────────────┘
+      │  #sidebar — bottom control bar     │
+      └────────────────────────────────────┘
 
+   The desktop 3-column layout is untouched — all of this lives inside the
+   mobile media query.  Reused desktop elements are re-anchored here with
+   position:fixed so the canvas scroll never breaks the pinned chrome.
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    /* ----------------------------------------------------------------
+       VERTICAL SHELL — no page scroll, canvas scrolls internally
+       ---------------------------------------------------------------- */
+    html, body { height: 100%; }
+
+    body {
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    #workspace {
+        order: 2;
+        flex: 1 1 0;
+        min-height: 0;
+        width: 100% !important;
+        height: auto !important;   /* override desktop's height:100% */
+    }
+
+    /* ----------------------------------------------------------------
+       TOP HEADER BAR  — logo + quick actions + zoom (fixed at top)
+       ---------------------------------------------------------------- */
+    #toolbar {
+        height: 48px;
+        padding: 0 96px 0 120px;  /* clear fixed brand (left) + zoom (right) */
+        gap: 2px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+    }
+    #toolbar::-webkit-scrollbar { display: none; }
+    #toolbar .toolbar-group-left { flex-shrink: 0; gap: 2px; }
+    #toolbar .toolbar-divider { height: 22px; margin: 0 3px; }
+    #toolbar .btn-icon,
+    #toolbar label.btn-icon { width: 34px; height: 34px; flex: 0 0 auto; }
+    #toolbar .btn-icon svg,
+    #toolbar label.btn-icon svg { width: 17px; height: 17px; }
+
+    /* Brand — pulled from the left sidebar into the header via fixed */
+    #sidebar > .brand-logo-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 3100;
+        width: 120px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        margin: 0;
+        background: #1a1a1a;
+        border: none;
+    }
+    #sidebar > .brand-logo-container .logo-icon { width: 17px; height: 17px; }
+    #sidebar > .brand-logo-container .logo-text { font-size: 13px; }
+
+    /* Zoom — pulled from the right panel into the header */
+    #sidebar-right .toolbar-group-center .zoom-dropdown {
+        position: fixed;
+        top: 8px;
+        right: 10px;
+        z-index: 3100;
+        width: 72px;
+        height: 32px;
+    }
+
+    /* ----------------------------------------------------------------
+       CANVAS AREA
+       ---------------------------------------------------------------- */
+    #canvas-container {
+        padding: 12px;
+        align-items: center;
+        justify-content: center;
+    }
+/* ----------------------------------------------------------------
+       FLOATING OVERLAY PANEL (right) — glassmorphism drawer
+       Contains: Organize Pages (view toggle + page list) + properties
+       ---------------------------------------------------------------- */
+    #sidebar-right {
+        position: fixed;
+        top: 48px;
+        right: 0;
+        bottom: calc(240px + env(safe-area-inset-bottom, 0px)); /* sit above the bottom control bar */
+        left: auto;
+        width: min(88vw, 340px) !important;
+        min-width: min(88vw, 340px) !important;
+        z-index: 2000;           /* front layer — above grid card + bottom bar */
+        background: rgba(28, 28, 36, 0.82);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-left: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: -12px 0 32px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* Collapse via the existing :has() checkbox (unchecked = open) */
+    #sidebar-right:has(#toggle-sidebar-right:checked) {
+        width: 0 !important;
+        min-width: 0 !important;
+        border-left-color: transparent;
+        box-shadow: none;
+    }
+
+    /* Keep the scroll wrapper rendered when collapsed so the header's
+       fixed zoom dropdown (a descendant) stays visible — the 0-width +
+       overflow:hidden panel clips the rest of the content. */
+    #sidebar-right:has(#toggle-sidebar-right:checked) > :not(.sidebar-toggle-btn) {
+        display: block !important;
+    }
+
+    #sidebar-right .sidebar-scroll {
+        padding: 12px;
+        gap: 10px;
+        background: transparent;
+    }
+
+    /* Rounded dark glass cards inside the panel */
+    #sidebar-right .section-box {
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        background: rgba(34, 34, 40, 0.92);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    #sidebar-right .section-box h3 {
+        color: #d8d8de;
+        font-size: 11px;
+        letter-spacing: 1.4px;
+    }
+
+    /* Page list — active selection pill in accent blue */
+    #pageList { max-height: 30vh; }
+
+    #sidebar-right .page-item {
+        border-radius: 999px;
+        padding: 10px 14px;
+        margin-bottom: 6px;
+        border: 1px solid transparent;
+    }
+
+    #sidebar-right .page-item.active {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        box-shadow: 0 0 14px rgba(59, 130, 246, 0.55);
+    }
+
+    /* Panel toggle tab — sits on the panel edge over the canvas */
+    #sidebar-right > .sidebar-toggle-btn.tab-right {
+        top: 42%;
+        width: 26px;
+        height: 56px;
+    }
+
+    /* ----------------------------------------------------------------
+       GRID & SNAPPING  — part of the bottom control bar
+       (in-flow, so it can never float over / block the right sidebar's
+       adjustment panels)
+       ---------------------------------------------------------------- */
+    #sidebar .section-box:has(#gridStyleSelect) {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        margin: 0;
+        padding: 6px;
+        border-radius: 12px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-subtle);
+    }
+
+    #sidebar .section-box:has(#gridStyleSelect) .prop-group {
+        display: flex;
+        flex-direction: row !important;
+        align-items: center;
+        gap: 8px !important;
+        margin: 0 !important;
+    }
+    #sidebar .section-box:has(#gridStyleSelect) .prop-group label {
+        white-space: nowrap;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-label);
+    }
+    #sidebar .section-box:has(#gridStyleSelect) .prop-group select {
+        flex: 1;
+        min-width: 0;
+        width: auto !important;   /* override inline width:100% */
+        margin: 0;
+        padding: 7px 10px;
+        font-size: 12px;
+    }
+
+    #sidebar .section-box:has(#gridStyleSelect) div[style] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px !important;
+        margin: 0 !important;
+    }
+    #sidebar .section-box:has(#gridStyleSelect) div[style] label {
+        display: flex !important;
+        align-items: center;
+        gap: 6px !important;
+        margin: 0;
+        font-size: 12px;
+        white-space: nowrap;
+        cursor: pointer;
+        color: var(--text-light);
+    }
+    #sidebar .section-box:has(#gridStyleSelect) div[style] input[type="checkbox"] {
+        width: 18px !important;   /* override inline 16px */
+        height: 18px !important;
+        flex: 0 0 auto;
+        margin: 0;
+        cursor: pointer;
+    }
+/* ----------------------------------------------------------------
+       BOTTOM CONTROL BAR  — fixed bottom toolbar
+       (the left sidebar is reframed into rows)
+       ---------------------------------------------------------------- */
+    #sidebar {
+        order: 3;
+        position: relative;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100%;
+        height: auto;
+        min-height: 0;
+        flex-direction: column;
+        gap: 6px;
+        padding: 8px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        border-right: none;
+        border-top: 1px solid var(--border-subtle);
+        background: var(--bg-sidebar);
+        box-sizing: border-box;
+        overflow: visible !important;
+        z-index: 1700;
+    }
+
+    /* Hide credits that don't belong in the bottom bar */
+    #sidebar .sidebar-credits { display: none !important; }
+
+    /* Return the left toggle + place it at LEFT TOP of the sidebar panel */
+    #sidebar > .sidebar-toggle-btn.tab-left {
+        display: flex;
+        position: absolute;
+        top: -18px;
+        left: 10px;
+        right: auto;
+        transform: none;          /* override desktop translateY(-50%) */
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: var(--bg-sidebar);
+        color: var(--text-light);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+        z-index: 2000;
+        touch-action: manipulation;
+    }
+    #sidebar > .sidebar-toggle-btn.tab-left .arrow-icon {
+        font-size: 12px;
+        transform: rotate(-90deg);   /* ◀ → ▼  (panel open, tap to collapse) */
+    }
+
+    /* Collapse the bottom bar when toggled (keep the header logo fixed) */
+    #sidebar:has(#toggle-sidebar-left:checked) {
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        border-top: none;
+        width: 100% !important;
+    }
+    #sidebar:has(#toggle-sidebar-left:checked) > :not(.sidebar-toggle-btn):not(.brand-logo-container) {
+        display: none !important;
+    }
+    #sidebar:has(#toggle-sidebar-left:checked) > .sidebar-toggle-btn.tab-left {
+        top: -8px;
+        left: 10px;
+    }
+    #sidebar:has(#toggle-sidebar-left:checked) > .sidebar-toggle-btn.tab-left .arrow-icon {
+        transform: rotate(90deg);    /* ◀ → ▲  (panel collapsed, tap to expand) */
+    }
+
+    /* Compact card base + hide row titles */
+    #sidebar .section-box {
+        margin: 0;
+        padding: 6px;
+        border-radius: 12px;
+    }
+    #sidebar .section-box h3 { display: none; }
+
+    /* PAGE LAYOUTS → rows:  [template] / [add | delete] */
+    #sidebar .section-box:has(#pageSizeSelect) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+    #sidebar .section-box:has(#pageSizeSelect) select {
+        grid-column: 1 / -1;
+        width: 100%;
+        margin: 0;
+        padding: 9px 10px;
+        font-size: 13px;
+    }
+    #sidebar .section-box:has(#pageSizeSelect) button.btn {
+        margin: 0;
+        padding: 9px 6px;
+        font-size: 13px;
+    }
+
+    /* ASSET INJECTORS → row:  [image] [speech] [delete] */
+    #sidebar .section-box:has(#fileInput) {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    #sidebar .section-box:has(#fileInput) button.btn {
+        margin: 0;
+        padding: 9px 4px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    #sidebar .section-box:has(#fileInput) #btnDeletePanel {
+        background: #8b2626;
+    }
+
+    /* ----------------------------------------------------------------
+       GENERIC TOUCH POLISH
+       ---------------------------------------------------------------- */
+    .btn, .btn-segment, .sidebar-toggle-btn,
+    .comic-panel, .speech-box-container,
+    .tail-control-handle, .panel-corner-handle.red-handle {
+        touch-action: manipulation;
+    }
+
+    .page-item { padding: 12px 14px; font-size: 14px; }
+}

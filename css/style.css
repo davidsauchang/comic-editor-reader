@@ -296,12 +296,26 @@ body {
 }
 
 .toolbar-group-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: nowrap;              /* everything stays on one line */
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 14px;
+}
+
+/* The view/zoom cluster now lives inside the right sidebar ("Organize Pages"),
+   so it must flow naturally above the page list instead of being absolutely
+   centered over the toolbar. It still works if re-used inside #toolbar: */
+#toolbar .toolbar-group-center {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    width: auto;
+    margin-bottom: 0;
+    justify-content: center;
 }
 
 .toolbar-select {
@@ -330,12 +344,16 @@ body {
 
 .zoom-dropdown {
     width: 75px;
+    min-width: 60px;
+    flex: 0 0 auto;                 /* never shrink below its set width */
     text-align: center;
 }
 
 /* Segmented view toggle strip */
 .view-toggle-segmented {
     display: flex;
+    flex: 1 1 auto;                 /* expands to fill the leftover space */
+    min-width: 0;
     background-color: #262626;
     padding: 2px;
     border-radius: 6px;
@@ -343,10 +361,12 @@ body {
 }
 
 .btn-segment {
+    flex: 1 1 0;                    /* split the strip evenly */
+    min-width: 0;
     background: transparent;
     border: none;
     color: #a0a0a0;
-    padding: 4px 12px;
+    padding: 4px 8px;
     font-size: 12px;
     font-weight: 500;
     border-radius: 4px;
@@ -354,6 +374,10 @@ body {
     height: 24px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .btn-segment:hover {
