@@ -94,13 +94,13 @@
     }
 /* ----------------------------------------------------------------
        FLOATING OVERLAY PANEL (right) — glassmorphism drawer
-       Contains: Organize Pages (view toggle + page list) + properties
+       Contains: Organize Pages + Grid & Snapping + properties
        ---------------------------------------------------------------- */
     #sidebar-right {
         position: fixed;
         top: 48px;
         right: 0;
-        bottom: calc(240px + env(safe-area-inset-bottom, 0px)); /* sit above the bottom control bar */
+        bottom: calc(152px + env(safe-area-inset-bottom, 0px)); /* sit above the bottom control bar */
         left: auto;
         width: min(88vw, 340px) !important;
         min-width: min(88vw, 340px) !important;
@@ -173,36 +173,36 @@
     }
 
     /* ----------------------------------------------------------------
-       GRID & SNAPPING  — part of the bottom control bar
-       (in-flow, so it can never float over / block the right sidebar's
-       adjustment panels)
+       GRID & SNAPPING  — relocated into the floating right sidebar by js/mobile-layout.js
+       (a page-level tool: visible when a page / nothing is selected,
+       hidden when an image panel or speech balloon is selected)
        ---------------------------------------------------------------- */
-    #sidebar .section-box:has(#gridStyleSelect) {
+    #sidebar-right .section-box:has(#gridStyleSelect) {
         display: grid;
         grid-template-columns: 1fr;
         gap: 6px;
         margin: 0;
-        padding: 6px;
-        border-radius: 12px;
-        background: var(--bg-panel);
-        border: 1px solid var(--border-subtle);
+        padding: 10px 12px;
+        border-radius: 14px;
+        background: rgba(34, 34, 40, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.10);
     }
 
-    #sidebar .section-box:has(#gridStyleSelect) .prop-group {
+    #sidebar-right .section-box:has(#gridStyleSelect) .prop-group {
         display: flex;
         flex-direction: row !important;
         align-items: center;
         gap: 8px !important;
         margin: 0 !important;
     }
-    #sidebar .section-box:has(#gridStyleSelect) .prop-group label {
+    #sidebar-right .section-box:has(#gridStyleSelect) .prop-group label {
         white-space: nowrap;
         font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.6px;
         color: var(--text-label);
     }
-    #sidebar .section-box:has(#gridStyleSelect) .prop-group select {
+    #sidebar-right .section-box:has(#gridStyleSelect) .prop-group select {
         flex: 1;
         min-width: 0;
         width: auto !important;   /* override inline width:100% */
@@ -211,7 +211,7 @@
         font-size: 12px;
     }
 
-    #sidebar .section-box:has(#gridStyleSelect) div[style] {
+    #sidebar-right .section-box:has(#gridStyleSelect) div[style] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap;
@@ -220,7 +220,7 @@
         gap: 6px !important;
         margin: 0 !important;
     }
-    #sidebar .section-box:has(#gridStyleSelect) div[style] label {
+    #sidebar-right .section-box:has(#gridStyleSelect) div[style] label {
         display: flex !important;
         align-items: center;
         gap: 6px !important;
@@ -230,7 +230,7 @@
         cursor: pointer;
         color: var(--text-light);
     }
-    #sidebar .section-box:has(#gridStyleSelect) div[style] input[type="checkbox"] {
+    #sidebar-right .section-box:has(#gridStyleSelect) div[style] input[type="checkbox"] {
         width: 18px !important;   /* override inline 16px */
         height: 18px !important;
         flex: 0 0 auto;

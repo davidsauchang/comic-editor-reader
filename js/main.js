@@ -8,6 +8,7 @@ import { addPage, deletePage, addSpeechBox, deleteSelectedElement, handleImageUp
 import { saveProject, loadProject, exportPDF, exportImages } from './export.js';
 import { initSettings } from './settings.js';
 import { syncPropertiesFromPanel } from './interactions.js';
+import { initMobileLayout } from './mobile-layout.js';
 
 // ============================================================
 // 🖱️ CLICK AWAY — Deselect on Canvas Click
@@ -181,6 +182,12 @@ document.getElementById('bubbleTextModifier')?.addEventListener('input', syncPro
 document.getElementById('bubbleStyleSelect')?.addEventListener('change', syncPropertiesFromPanel);
 document.getElementById('fontFamilySelect')?.addEventListener('change', syncPropertiesFromPanel);
 document.getElementById('fontSizeSelect')?.addEventListener('change', syncPropertiesFromPanel);
+
+// ============================================================
+// 📱 MOBILE LAYOUT — Grid & Snapping card placement + visibility
+// ============================================================
+
+initMobileLayout();
 document.getElementById('propFontColor')?.addEventListener('change', syncPropertiesFromPanel);
 
 // === FIX #2: WHITE BORDER ===
