@@ -92,29 +92,6 @@
             <button class="btn" id="btnDeletePanel" style="background:#8b2626; margin-top: 12px; width:100%;">Delete Selected</button>
         </div>
 
-        <div class="section-box">
-            <h3>Grid & Snapping</h3>
-            <div class="prop-group" style="margin-bottom: 12px;">
-                <label>Background Style</label>
-                <select id="gridStyleSelect" class="btn" style="background:#222; margin:0; width:100%; text-align:left;">
-                    <option value="none">Blank White</option>
-                    <option value="grid">Blueprint Grid</option>
-                </select>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="chkSnapToGrid" style="width: 16px; height: 16px; cursor: pointer;">
-                    Snap to 20px Grid
-                </label>
-                
-                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="btnToggleMargin" style="width: 16px; height: 16px; cursor: pointer;" checked>
-                    Show Inner Margin Guides
-                </label>
-            </div>
-        </div>
-
         <!-- ✅ Trigger: Created by David Sau Chang (INSIDE sidebar, at the bottom) -->
         <div class="sidebar-credits" id="creditTrigger" style="cursor: pointer;">
             Created by <span class="credits-name">David Sau Chang</span>
@@ -223,6 +200,29 @@
                 </select>
             </div>
             <div id="pageList"></div>
+        </div>
+
+        <div class="section-box">
+            <h3>Grid & Snapping</h3>
+            <div class="prop-group" style="margin-bottom: 12px;">
+                <label>Background Style</label>
+                <select id="gridStyleSelect" class="btn" style="background:#222; margin:0; width:100%; text-align:left;">
+                    <option value="none">Blank White</option>
+                    <option value="grid">Blueprint Grid</option>
+                </select>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="chkSnapToGrid" style="width: 16px; height: 16px; cursor: pointer;">
+                    Snap to 20px Grid
+                </label>
+
+                <label style="display: flex; align-items: center; gap: 8px; color: var(--text-light); font-size: 13px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="btnToggleMargin" style="width: 16px; height: 16px; cursor: pointer;" checked>
+                    Show Inner Margin Guides
+                </label>
+            </div>
         </div>
 
         <div id="propertiesPanel" class="section-box hidden">

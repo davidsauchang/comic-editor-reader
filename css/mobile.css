@@ -173,8 +173,9 @@
     }
 
     /* ----------------------------------------------------------------
-       GRID & SNAPPING  — relocated into the floating right sidebar by js/mobile-layout.js
-       (a page-level tool: visible when a page / nothing is selected,
+       GRID & SNAPPING  — lives in the right sidebar on mobile AND desktop
+       (statically placed in the HTML; visibility driven by js/panel-visibility.js:
+       a page-level tool — visible when a page / nothing is selected,
        hidden when an image panel or speech balloon is selected)
        ---------------------------------------------------------------- */
     #sidebar-right .section-box:has(#gridStyleSelect) {

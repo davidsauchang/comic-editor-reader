@@ -2,7 +2,7 @@
 // 📦 SERVICE WORKER — MangaMesh PWA
 // ============================================================
 
-const CACHE_NAME = 'mangamesh-v14';
+const CACHE_NAME = 'mangamesh-v15';
 
 // Only list files that ACTUALLY EXIST in your project
 const ASSETS = [
@@ -21,7 +21,7 @@ const ASSETS = [
   'js/interactions.js',
   'js/export.js',
   'js/settings.js',
-  'js/mobile-layout.js',
+  'js/panel-visibility.js',
   
   // PWA files
   'manifest.json',

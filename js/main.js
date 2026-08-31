@@ -8,7 +8,7 @@ import { addPage, deletePage, addSpeechBox, deleteSelectedElement, handleImageUp
 import { saveProject, loadProject, exportPDF, exportImages } from './export.js';
 import { initSettings } from './settings.js';
 import { syncPropertiesFromPanel } from './interactions.js';
-import { initMobileLayout } from './mobile-layout.js';
+import { initPanelVisibility } from './panel-visibility.js';
 
 // ============================================================
 // 🖱️ CLICK AWAY — Deselect on Canvas Click
@@ -184,10 +184,10 @@ document.getElementById('fontFamilySelect')?.addEventListener('change', syncProp
 document.getElementById('fontSizeSelect')?.addEventListener('change', syncPropertiesFromPanel);
 
 // ============================================================
-// 📱 MOBILE LAYOUT — Grid & Snapping card placement + visibility
+// 👁️ PANEL VISIBILITY — Grid & Snapping / Layer Control context cards
 // ============================================================
 
-initMobileLayout();
+initPanelVisibility();
 document.getElementById('propFontColor')?.addEventListener('change', syncPropertiesFromPanel);
 
 // === FIX #2: WHITE BORDER ===
