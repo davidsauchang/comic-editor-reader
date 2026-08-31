@@ -552,7 +552,9 @@ export function makeCornerDraggable(handle, data, cornerIndex) {
 export function openPropertiesPanel(type, data, element) {
     if (!els.propertiesPanel) return;
     
-    els.propertiesPanel.classList.remove('hidden');
+    // The card's visibility (`hidden` class) is driven centrally by
+    // js/panel-visibility.js from the '.selected' class added in startDrag;
+    // this function only populates the transform fields.
     elsProps.title.innerText = type === 'panel' ? '🖼️ Transform Panel Asset' : '💬 Transform Speech Box';
     
     if (els.panelPropX) els.panelPropX.value = Math.round(data.left);

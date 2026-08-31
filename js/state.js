@@ -73,7 +73,8 @@ export function saveHistoryState() {
 export function clearAllSelections() {
     state.currentPanelId = null;
     state.currentSpeechId = null;
-    els.propertiesPanel?.classList.add('hidden');
+    // 'hidden' on #propertiesPanel (and Grid & Snapping / Layer Control)
+    // is driven by js/panel-visibility.js from the '.selected' removal below
     
     document.querySelectorAll('.comic-panel, .speech-box-container').forEach(el => {
         el.classList.remove('selected');

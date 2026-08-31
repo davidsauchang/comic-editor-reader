@@ -184,7 +184,7 @@ document.getElementById('fontFamilySelect')?.addEventListener('change', syncProp
 document.getElementById('fontSizeSelect')?.addEventListener('change', syncPropertiesFromPanel);
 
 // ============================================================
-// 👁️ PANEL VISIBILITY — Grid & Snapping / Layer Control context cards
+// 👁️ PANEL VISIBILITY — Grid & Snapping / Transform / Layer Control context cards
 // ============================================================
 
 initPanelVisibility();

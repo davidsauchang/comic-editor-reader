@@ -1,15 +1,16 @@
 // ============================================================
 // 👁️ PANEL VISIBILITY — context cards in the right sidebar
 // ============================================================
-// The right sidebar holds two context cards whose visibility follows
-// the canvas selection (identical behaviour on mobile and desktop):
-//   • "Grid & Snapping" is a page-level tool: visible when a page (or
+// The right sidebar holds context cards whose visibility follows the
+// canvas selection (identical behaviour on mobile and desktop):
+//   • PAGE-LEVEL    — "Grid & Snapping": visible when a page (or
 //     nothing) is selected, hidden when an image panel or speech
-//     balloon is selected — the "Transform Element" card takes over.
-//   • "Layer Control" is the exact inverse: an element-level tool,
-//     visible only while an image panel or speech balloon is selected.
-// Both cards live statically in the HTML (no DOM relocation needed);
-// this module only drives their `hidden` class.
+//     balloon is selected.
+//   • ELEMENT-LEVEL — "Transform Element" (#propertiesPanel) and
+//     "Layer Control": visible ONLY while an image panel or speech
+//     balloon is selected.
+// The cards live statically in the HTML; this module drives only
+// their `hidden` class — field population stays in interactions.js.
 //
 // Selection state is reflected on canvas elements via the '.selected'
 // class (added on tap/drag-start, removed by clearAllSelections() and
@@ -19,6 +20,7 @@
 // deletes… — without touching any call sites.
 
 let gridBox = null;
+let propertiesBox = null;
 let layerBox = null;
 let selectionObserver = null;
 
@@ -36,6 +38,13 @@ function getLayerBox() {
     if (layerBox && layerBox.isConnected) return layerBox;
     layerBox = document.getElementById('layer-forward')?.closest('.section-box') || null;
     return layerBox;
+}
+
+// #propertiesPanel IS the .section-box card itself (no closest() needed)
+function getPropertiesBox() {
+    if (propertiesBox && propertiesBox.isConnected) return propertiesBox;
+    propertiesBox = document.getElementById('propertiesPanel');
+    return propertiesBox;
 }
 
 // ============================================================
@@ -60,11 +69,16 @@ function updateGridVisibility() {
     box.classList.toggle('hidden', elementIsSelected());
 }
 
-// Layer Control: element-level → visible only while an element is selected
-function updateLayerControlVisibility() {
-    const box = getLayerBox();
-    if (!box || !box.isConnected) return;
-    box.classList.toggle('hidden', !elementIsSelected());
+// Transform Element + Layer Control: element-level → visible only while an
+// element is selected (they share the exact same condition)
+function updateElementCardsVisibility() {
+    const show = elementIsSelected();
+
+    const props = getPropertiesBox();
+    if (props && props.isConnected) props.classList.toggle('hidden', !show);
+
+    const layer = getLayerBox();
+    if (layer && layer.isConnected) layer.classList.toggle('hidden', !show);
 }
 
 // ============================================================
@@ -76,7 +90,7 @@ function watchSelectionChanges() {
     if (!host || selectionObserver) return;
     selectionObserver = new MutationObserver(() => {
         updateGridVisibility();
-        updateLayerControlVisibility();
+        updateElementCardsVisibility();
     });
     selectionObserver.observe(host, {
         subtree: true,
@@ -93,5 +107,5 @@ function watchSelectionChanges() {
 export function initPanelVisibility() {
     watchSelectionChanges();
     updateGridVisibility();
-    updateLayerControlVisibility();
+    updateElementCardsVisibility();
 }
