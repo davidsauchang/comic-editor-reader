@@ -2,7 +2,7 @@
 // 📦 MAIN — Application Entry Point
 // ============================================================
 
-import { state, clearAllSelections } from './state.js';
+import { state, clearAllSelections, initUnsavedChangesMonitor, markAsSaved, isDirty } from './state.js';
 import { renderCanvas, applyZoom, renderSidebar, selectPage } from './canvas.js';
 import { addPage, deletePage, addSpeechBox, deleteSelectedElement, handleImageUpload, applyCrop, cancelCrop, moveLayer } from './actions.js';
 import { saveProject, loadProject, exportPDF, exportImages } from './export.js';
@@ -85,7 +85,10 @@ document.getElementById('layer-bottom')?.addEventListener('click', () => moveLay
 // 💾 PROJECT ACTIONS
 // ============================================================
 
-document.getElementById('btnSaveProject')?.addEventListener('click', saveProject);
+document.getElementById('btnSaveProject')?.addEventListener('click', () => {
+    saveProject();
+    markAsSaved();
+});
 
 const loadProjectInput = document.getElementById('btnLoadProject');
 loadProjectInput?.addEventListener('change', (e) => {
@@ -266,6 +269,21 @@ document.addEventListener('keydown', (e) => {
 
 initSettings();
 addPage();
+initUnsavedChangesMonitor();
+
+// ============================================================
+// ⚠️ UNSAVED-CHANGES WARNING — refresh, back/forward, or close
+// ============================================================
+// Uses the browser's native leave-site prompt, which reliably covers
+// reload (F5/Ctrl+R), back/forward navigation and tab/closing. The
+// custom message text is ignored by modern browsers by design, but the
+// prompt only ever appears when there are actual unsaved changes.
+
+window.addEventListener('beforeunload', (e) => {
+    if (!isDirty()) return;
+    e.preventDefault();
+    e.returnValue = '';
+});
 
 // ============================================================
 // 📱 PWA — Register Service Worker

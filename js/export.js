@@ -2,7 +2,7 @@
 // 📤 EXPORT — PDF, ZIP, and Project Save/Load
 // ============================================================
 
-import { state, clearAllSelections } from './state.js';
+import { state, clearAllSelections, markAsSaved } from './state.js';
 import { renderCanvas, paintPageContents } from './canvas.js';
 
 // ============================================================
@@ -147,6 +147,7 @@ export function loadProject(file) {
 
             clearAllSelections();
             renderCanvas();
+            markAsSaved();
             
             alert("Project loaded successfully!");
         } catch (err) {

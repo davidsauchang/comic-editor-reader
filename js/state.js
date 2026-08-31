@@ -94,3 +94,48 @@ export function updateGridCSSPosition() {
         pageCanvas.style.backgroundPosition = `${activeMargin}px ${activeMargin}px`;
     }
 }
+
+// ============================================================
+// 💾 UNSAVED-CHANGES MONITOR
+// ============================================================
+// A lightweight, call-site-free dirty tracker: every ~800ms we snapshot
+// the project *content* (pages + persisted settings) and compare it to
+// the last-saved baseline. Any edit path — drags, text input, rotation,
+// layer swapping, undo/redo, grid toggles, page add/delete, image crop —
+// automatically flips `dirty` without touching each call site.
+// View-state (zoom, viewMode, currentPage, selections) is excluded so
+// simply looking around or switching pages never triggers a warning.
+
+let savedSnapshot = '';
+let dirty = false;
+
+function currentSnapshot() {
+    return JSON.stringify({
+        pages: state.pages,
+        gridStyle: state.gridStyle,
+        snapToGrid: state.snapToGrid,
+        gridSize: state.gridSize,
+        pageSize: state.pageSize,
+        showInnerMargin: state.showInnerMargin,
+        innerMarginSize: state.innerMarginSize
+    });
+}
+
+// Call after the initial blank page has been created (and after any
+// load/save that should become the clean baseline).
+export function initUnsavedChangesMonitor() {
+    savedSnapshot = currentSnapshot();
+    dirty = false;
+    setInterval(() => {
+        dirty = (currentSnapshot() !== savedSnapshot);
+    }, 800);
+}
+
+export function markAsSaved() {
+    savedSnapshot = currentSnapshot();
+    dirty = false;
+}
+
+export function isDirty() {
+    return dirty;
+}
