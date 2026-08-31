@@ -250,8 +250,13 @@ export function paintPageContents(page, container) {
             // === FIX #5: TITLE STYLE ===
             if (box.style === 'title') {
                 div.classList.add('transparent-title-style');
-                // Title text should be white with black outline
-                span.style.color = '#ffffff';
+                // Title text respects the user's Font Color. Default to white —
+                // black would vanish against the hardcoded black outline. The
+                // setProperty(..., 'important') matters: a plain .style.color
+                // assignment below would inherit the important priority and
+                // permanently override box.fontColor.
+                const titleColor = (box.fontColor && box.fontColor !== '#000000') ? box.fontColor : '#ffffff';
+                span.style.setProperty('color', titleColor, 'important');
                 span.style.textShadow = '-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0px 3px 8px rgba(0,0,0,0.8)';
                 textContainer.appendChild(span);
                 div.appendChild(textContainer);
