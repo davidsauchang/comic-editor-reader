@@ -2,7 +2,7 @@
 // 📦 SERVICE WORKER — MangaMesh PWA
 // ============================================================
 
-const CACHE_NAME = 'mangamesh-v18';
+const CACHE_NAME = 'mangamesh-v19';
 
 // Only list files that ACTUALLY EXIST in your project
 const ASSETS = [

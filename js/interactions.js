@@ -390,8 +390,10 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         if (item.corners) {
             item.corners = item.corners.map(c => ({ x: c.x + offsetX, y: c.y + offsetY }));
         }
-        if (item.tailX !== undefined) item.tailX += offsetX;
-        if (item.tailY !== undefined) item.tailY += offsetY;
+        // NOTE: tailX/tailY are NOT translated — they are bubble-LOCAL
+        // coordinates (canvas.js draws them inside the SVG viewBox, and
+        // tail-dragging stores local deltas), so they must stay relative
+        // to the bubble so the tail travels with it to the new page.
 
         // Place on the top layer of the destination page.
         item.zIndex = getPageMaxZIndex(targetPage) + 1;
