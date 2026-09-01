@@ -1,12 +1,12 @@
-// ============================================================
-// 🖱️ INTERACTIONS — Drag, Resize, Tail Control, Properties
+﻿// ============================================================
+// ðŸ–±ï¸ INTERACTIONS â€” Drag, Resize, Tail Control, Properties
 // ============================================================
 
 import { state, els, elsProps, saveHistoryState } from './state.js';
 import { renderCanvas } from './canvas.js';
 
 // ============================================================
-// 🎯 TAIL DRAGGABLE — Speech Bubble Tail (with Touch)
+// ðŸŽ¯ TAIL DRAGGABLE â€” Speech Bubble Tail (with Touch)
 // ============================================================
 
 export function makeTailDraggable(handle, data, container, pathEl) {
@@ -18,7 +18,7 @@ export function makeTailDraggable(handle, data, container, pathEl) {
     // convert its delta into *page* space (page is scaled by state.zoom).
     // The handle lives inside the rotated wrapper at a fixed offset from the
     // tail, so we also snapshot its starting local position and shift it by
-    // the same delta — this keeps the handle glued to the pointer even when
+    // the same delta â€” this keeps the handle glued to the pointer even when
     // the tail moves past the bubble's left/top edge (negative coords).
     let startScreenX = 0, startScreenY = 0;
     let startTailX = 0, startTailY = 0;
@@ -41,7 +41,7 @@ export function makeTailDraggable(handle, data, container, pathEl) {
         if (handle.setPointerCapture) {
             try {
                 handle.setPointerCapture(e.pointerId);
-            } catch (err) { /* capture not supported — drag still works */ }
+            } catch (err) { /* capture not supported â€” drag still works */ }
         }
         startTailDrag(e.clientX, e.clientY);
     });
@@ -174,7 +174,7 @@ function updateTailPath(data, pathEl, tailX, tailY) {
 }
 
 // ============================================================
-// 🖱️ ELEMENT INTERACTABLE — Drag & Resize (with Touch)
+// ðŸ–±ï¸ ELEMENT INTERACTABLE â€” Drag & Resize (with Touch)
 // ============================================================
 
 export function makeElementInteractable(element, data, type, resizeHandle) {
@@ -183,20 +183,24 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
     let isDragging = false, isResizing = false;
     let startX, startY, startLeft, startTop, startWidth, startHeight;
 
-    // ── Mouse ──
+    // --- Mouse ---
     element.addEventListener('mousedown', (e) => {
         if (e.target.classList.contains('speech-text') || 
             e.target.classList.contains('tail-control-handle') || 
             e.target.classList.contains('panel-corner-handle')) return;
+        // Lock Panel: prevent moving/resizing a locked image panel, but still
+        // allow it to be clicked for selection.
+        if (type === 'panel' && data.isLocked && state.currentPage !== -1 && state.currentPanelId === data.id) return;
         e.stopPropagation();
         startDrag(e.clientX, e.clientY, e);
     });
 
-    // ── Touch ──
+    // â”€â”€ Touch â”€â”€
     element.addEventListener('touchstart', (e) => {
         if (e.target.classList.contains('speech-text') || 
             e.target.classList.contains('tail-control-handle') || 
             e.target.classList.contains('panel-corner-handle')) return;
+        if (type === 'panel' && data.isLocked && state.currentPage !== -1 && state.currentPanelId === data.id) return;
         e.preventDefault();
         e.stopPropagation();
         const touch = e.changedTouches[0];
@@ -329,7 +333,7 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
     }
 
     // ============================================================
-    // 🗂️ DRAG-TO-ANOTHER-PAGE (scroll view)
+    // ðŸ—‚ï¸ DRAG-TO-ANOTHER-PAGE (scroll view)
     // Moves an image panel or speech balloon to whichever page it was
     // dropped on, positioning it at the same spot and putting it on the
     // top layer (highest z-index) of the destination page.
@@ -390,7 +394,7 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         if (item.corners) {
             item.corners = item.corners.map(c => ({ x: c.x + offsetX, y: c.y + offsetY }));
         }
-        // NOTE: tailX/tailY are NOT translated — they are bubble-LOCAL
+        // NOTE: tailX/tailY are NOT translated â€” they are bubble-LOCAL
         // coordinates (canvas.js draws them inside the SVG viewBox, and
         // tail-dragging stores local deltas), so they must stay relative
         // to the bubble so the tail travels with it to the new page.
@@ -419,7 +423,7 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
 }
 
 // ============================================================
-// ✅ HELPER: Update SVG polygon without full re-render
+// âœ… HELPER: Update SVG polygon without full re-render
 // ============================================================
 
 function updateDistortionPolygon(element, data) {
@@ -466,7 +470,7 @@ function updateDistortionPolygon(element, data) {
 }
 
 // ============================================================
-// 🎯 CORNER DRAGGABLE — For Distortion Mode (with Touch)
+// ðŸŽ¯ CORNER DRAGGABLE â€” For Distortion Mode (with Touch)
 // ============================================================
 
 export function makeCornerDraggable(handle, data, cornerIndex) {
@@ -548,7 +552,7 @@ export function makeCornerDraggable(handle, data, cornerIndex) {
 }
 
 // ============================================================
-// 📋 PROPERTIES PANEL
+// ðŸ“‹ PROPERTIES PANEL
 // ============================================================
 
 export function openPropertiesPanel(type, data, element) {
@@ -557,7 +561,7 @@ export function openPropertiesPanel(type, data, element) {
     // The card's visibility (`hidden` class) is driven centrally by
     // js/panel-visibility.js from the '.selected' class added in startDrag;
     // this function only populates the transform fields.
-    elsProps.title.innerText = type === 'panel' ? '🖼️ Transform Panel Asset' : '💬 Transform Speech Box';
+    elsProps.title.innerText = type === 'panel' ? 'ðŸ–¼ï¸ Transform Panel Asset' : 'ðŸ’¬ Transform Speech Box';
     
     if (els.panelPropX) els.panelPropX.value = Math.round(data.left);
     if (els.panelPropY) els.panelPropY.value = Math.round(data.top);
@@ -584,6 +588,8 @@ export function openPropertiesPanel(type, data, element) {
         if (whiteBorderCheck) whiteBorderCheck.checked = data.hasWhiteBorder || false;
         const distortCheck = document.getElementById('chkDistortMode');
         if (distortCheck) distortCheck.checked = data.isDistortedMode || false;
+        const lockCheck = document.getElementById('check-lock-panel');
+        if (lockCheck) lockCheck.checked = data.isLocked || false;
     }
     
     window._currentEditElement = element;
@@ -608,7 +614,7 @@ function updatePropertiesPanel(data) {
 }
 
 // ============================================================
-// 🔄 SYNC PROPERTIES FROM PANEL
+// ðŸ”„ SYNC PROPERTIES FROM PANEL
 // ============================================================
 
 export function syncPropertiesFromPanel() {

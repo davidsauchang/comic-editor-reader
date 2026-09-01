@@ -226,6 +226,17 @@ document.getElementById('chkDistortMode')?.addEventListener('change', (e) => {
     }
 });
 
+// === FIX #4: LOCK PANEL ===
+document.getElementById('check-lock-panel')?.addEventListener('change', (e) => {
+    if (state.currentPanelId !== null && state.currentPage !== -1) {
+        const panel = state.pages[state.currentPage].panels.find(p => p.id === state.currentPanelId);
+        if (panel) {
+            panel.isLocked = e.target.checked;
+            renderCanvas();
+        }
+    }
+});
+
 // ============================================================
 // SUPPORT EASTER EGG
 // ============================================================
