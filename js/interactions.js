@@ -188,9 +188,13 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         if (e.target.classList.contains('speech-text') || 
             e.target.classList.contains('tail-control-handle') || 
             e.target.classList.contains('panel-corner-handle')) return;
-        // Lock Panel: prevent moving/resizing a locked image panel, but still
-        // allow it to be clicked for selection.
-        if (type === 'panel' && data.isLocked && state.currentPage !== -1 && state.currentPanelId === data.id) return;
+        // Lock Panel: prevent moving/resizing a locked image panel.
+        // Note: we DON'T check state.currentPanelId here because during
+        // re-selection mousedown, currentPanelId hasn't been updated yet —
+        // that race condition allowed locked panels to be moved after
+        // deselect/re-select. Just bail on any mousedown on a locked panel;
+        // the click still fires normally (we don't stopPropagation before this).
+        if (type === 'panel' && data.isLocked) return;
         e.stopPropagation();
         startDrag(e.clientX, e.clientY, e);
     });
@@ -200,7 +204,9 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         if (e.target.classList.contains('speech-text') || 
             e.target.classList.contains('tail-control-handle') || 
             e.target.classList.contains('panel-corner-handle')) return;
-        if (type === 'panel' && data.isLocked && state.currentPage !== -1 && state.currentPanelId === data.id) return;
+        // Same lock guard as mouse handler — prevents accidental moves
+        // during touch re-selection of a locked panel.
+        if (type === 'panel' && data.isLocked) return;
         e.preventDefault();
         e.stopPropagation();
         const touch = e.changedTouches[0];
