@@ -194,7 +194,6 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         // that race condition allowed locked panels to be moved after
         // deselect/re-select. Just bail on any mousedown on a locked panel;
         // the click still fires normally (we don't stopPropagation before this).
-        if (type === 'panel' && data.isLocked) return;
         e.stopPropagation();
         startDrag(e.clientX, e.clientY, e);
     });
@@ -204,9 +203,6 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         if (e.target.classList.contains('speech-text') || 
             e.target.classList.contains('tail-control-handle') || 
             e.target.classList.contains('panel-corner-handle')) return;
-        // Same lock guard as mouse handler — prevents accidental moves
-        // during touch re-selection of a locked panel.
-        if (type === 'panel' && data.isLocked) return;
         e.preventDefault();
         e.stopPropagation();
         const touch = e.changedTouches[0];
@@ -226,6 +222,18 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         document.querySelectorAll('.comic-panel, .speech-box-container').forEach(el => el.classList.remove('selected'));
         element.classList.add('selected');
         openPropertiesPanel(type, data, element);
+
+        // Lock Panel: allow selection but block actual dragging/resizing.
+        const panelIsLocked = (type === 'panel' && data.isLocked);
+
+        if (panelIsLocked) {
+            // Don't set isDragging/isResizing — selection happened above, but
+            // no movement will occur since handleMove checks these flags.
+            // Still need to clean up listeners on release.
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('touchend', onTouchEnd);
+            return; // skip setting start coordinates and movement flags
+        }
 
         if (e.target === resizeHandle) {
             isResizing = true;
@@ -336,6 +344,10 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
             transferToHoveredPage(data);
             renderCanvas();
         }
+        // Clean up the lock-only listeners (added when a locked panel was
+        // selected — we still need to remove the mouseup/touchend handlers).
+        window.removeEventListener('mouseup', onMouseUp);
+        window.removeEventListener('touchend', onTouchEnd);
     }
 
     // ============================================================
