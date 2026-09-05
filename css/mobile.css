@@ -362,4 +362,15 @@
     }
 
     .page-item { padding: 12px 14px; font-size: 14px; }
+
+    /* Folder import — responsive */
+    #folderImportModal .modal-content {
+        width: 92vw;
+        max-height: 88vh;
+        overflow-y: auto;
+    }
+
+    .folder-drop-inner { padding: 28px 20px; }
+    .folder-drop-inner h3 { font-size: 15px; }
+    #folderGapInput { width: 70px; }
 }

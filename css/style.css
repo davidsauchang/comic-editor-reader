@@ -1087,3 +1087,125 @@ body {
         transform: translate(-50%, -50%) scale(1);
     }
 }
+    /* ==========================================================================
+   📁 FOLDER IMPORT — Drop Overlay + Layout Modal
+   ========================================================================== */
+#folderDropOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    background: rgba(16, 18, 24, 0.72);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+#folderDropOverlay.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.folder-drop-inner {
+    border: 2px dashed var(--accent);
+    border-radius: 16px;
+    padding: 48px 64px;
+    text-align: center;
+    background: rgba(74, 158, 255, 0.08);
+    color: var(--text-light);
+}
+
+.folder-drop-inner svg { color: var(--accent); }
+
+.folder-drop-inner h3 {
+    margin: 12px 0 4px 0;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+}
+
+.folder-drop-inner p { margin: 0; font-size: 12px; color: var(--text-muted); }
+
+/* Layout chooser modal */
+#folderImportModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#folderImportModal.active { visibility: visible; opacity: 1; pointer-events: auto; }
+
+.folder-layout-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.folder-layout-opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+}
+
+.folder-layout-opt:hover { border-color: var(--accent); }
+.folder-layout-opt:has(input:checked) {
+    border-color: var(--accent);
+    background: rgba(74, 158, 255, 0.12);
+}
+
+.folder-layout-opt input[type="radio"] {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+.folder-layout-title {
+    display: block;
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: bold;
+}
+
+.folder-layout-desc {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: normal;
+}
+
+.folder-gap-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.folder-gap-row label { font-size: 12px; color: var(--text-light); }
+
+#folderGapInput {
+    width: 80px;
+    background: var(--bg-input);
+    color: var(--text-light);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+}

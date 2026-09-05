@@ -9,6 +9,7 @@ import { saveProject, loadProject, exportPDF, exportImages } from './export.js';
 import { initSettings } from './settings.js';
 import { syncPropertiesFromPanel } from './interactions.js';
 import { initPanelVisibility } from './panel-visibility.js';
+import { initFolderImport } from './folder-import.js';
 
 // ============================================================
 // 🖱️ CLICK AWAY — Deselect on Canvas Click
@@ -280,6 +281,7 @@ document.addEventListener('keydown', (e) => {
 
 initSettings();
 addPage();
+initFolderImport();
 initUnsavedChangesMonitor();
 
 // ============================================================
