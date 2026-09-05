@@ -127,10 +127,29 @@ export function applyCrop() {
     const croppedSrc = canvas.toDataURL('image/jpeg', 0.9);
     const maxZ = getMaxZIndex();
 
-    const initialLeft = 80;
-    const initialTop = 120;
-    const initialWidth = Math.min(320, state.pageSize[0] - 160);
-    const initialHeight = Math.min(320, state.pageSize[1] - 160);
+    // The cropped canvas carries the *natural* crop pixel dimensions — use
+    // them so the panel's aspect ratio matches the crop immediately instead of
+    // the old fixed 320×320 square. Fit the crop into the page area (keeping
+    // margins), scaling down only as needed; small crops keep their natural
+    // pixel size (never upscaled → stays crisp).
+    const cropW = canvas.width;
+    const cropH = canvas.height;
+
+    const maxPanelW = Math.max(40, state.pageSize[0] - 160);
+    const maxPanelH = Math.max(40, state.pageSize[1] - 160);
+
+    let initialWidth = Math.min(cropW, maxPanelW);
+    let initialHeight = initialWidth * (cropH / cropW);
+    if (initialHeight > maxPanelH) {
+        initialHeight = maxPanelH;
+        initialWidth = initialHeight * (cropW / cropH);
+    }
+    initialWidth = Math.round(Math.max(40, initialWidth));
+    initialHeight = Math.round(Math.max(40, initialHeight));
+
+    // Center the panel so larger crops stay fully visible on the page.
+    const initialLeft = Math.round((state.pageSize[0] - initialWidth) / 2);
+    const initialTop = Math.round((state.pageSize[1] - initialHeight) / 2);
 
     const targetPanel = {
         id: Date.now() + Math.random(),
