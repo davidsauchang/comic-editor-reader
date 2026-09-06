@@ -102,8 +102,8 @@
         right: 0;
         bottom: calc(152px + env(safe-area-inset-bottom, 0px)); /* sit above the bottom control bar */
         left: auto;
-        width: min(88vw, 340px) !important;
-        min-width: min(88vw, 340px) !important;
+        width: min(40vw, 300px) !important;
+        min-width: min(40vw, 300px) !important;
         z-index: 2000;           /* front layer — above grid card + bottom bar */
         background: rgba(28, 28, 36, 0.82);
         backdrop-filter: blur(14px);
