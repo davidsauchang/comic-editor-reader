@@ -1,11 +1,32 @@
 {
   "name": "MangaMesh — Comic Layout Creator",
   "short_name": "MangaMesh",
-  "description": "Create, edit, and export comic layouts with ease",
-  "start_url": "/",
+  "description": "Create, edit, and export comic and webtoon layouts with ease",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#1e1e24",
   "theme_color": "#1e1e24",
-  "categories": ["art", "design", "productivity"]
+  "categories": ["art", "design", "productivity"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }

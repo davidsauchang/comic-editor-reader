@@ -6,35 +6,31 @@
      ============================================================ -->
 
 <!-- Basic PWA -->
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#1e1e24">
+<meta name="description" content="MangaMesh — Create, edit, and export comic and webtoon layouts.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MangaMesh">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="MangaMesh">
 
-<!-- Icons for different platforms --
-<link rel="icon" type="image/png" sizes="72x72" href="/icons/icon-72.png"> 
-<link rel="icon" type="image/png" sizes="96x96" href="/icons/icon-96.png">
-<link rel="icon" type="image/png" sizes="128x128" href="/icons/icon-128.png">
-<link rel="icon" type="image/png" sizes="144x144" href="/icons/icon-144.png">
-<link rel="icon" type="image/png" sizes="152x152" href="/icons/icon-152.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="icon" type="image/png" sizes="384x384" href="/icons/icon-384.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png"> -->
+<!-- Icons (relative paths - work at root or any subpath) -->
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
 
 <!-- Apple Touch Icon -->
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png">
 
 <!-- Microsoft Tile -->
-<meta name="msapplication-TileImage" content="/icons/icon-144.png">
+<meta name="msapplication-TileImage" content="./icons/icon-192.png">
 <meta name="msapplication-TileColor" content="#1e1e24">
 
 <!-- ============================================================
      END PWA META TAGS
      ============================================================ -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MangaMesh</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -91,6 +87,7 @@
             <button class="btn" id="btnAddSpeech">+ Add Speech Box</button>
             <button class="btn" id="btnImportFolderSide" title="Import an entire folder of images">📁 Import Folder</button>
             <button class="btn" id="btnDeletePanel" style="background:#8b2626; margin-top: 12px; width:100%;">Delete Selected</button>
+            <button class="btn" id="btnInstallApp" style="display:none; background:#1f6f43; margin-top: 12px; width:100%;">⬇ Install App</button>
         </div>
 
         <!-- ✅ Trigger: Created by David Sau Chang (INSIDE sidebar, at the bottom) -->

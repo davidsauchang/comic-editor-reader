@@ -1,5 +1,5 @@
-// ============================================================
-// 📦 MAIN — Application Entry Point
+﻿// ============================================================
+// ðŸ“¦ MAIN â€” Application Entry Point
 // ============================================================
 
 import { state, clearAllSelections, initUnsavedChangesMonitor, markAsSaved, isDirty } from './state.js';
@@ -12,7 +12,7 @@ import { initPanelVisibility } from './panel-visibility.js';
 import { initFolderImport } from './folder-import.js';
 
 // ============================================================
-// 🖱️ CLICK AWAY — Deselect on Canvas Click
+// ðŸ–±ï¸ CLICK AWAY â€” Deselect on Canvas Click
 // ============================================================
 
 const canvasContainer = document.getElementById('canvas-container');
@@ -28,7 +28,7 @@ canvasContainer?.addEventListener('mousedown', (e) => {
 });
 
 // ============================================================
-// 🎯 VIEW TOGGLE
+// ðŸŽ¯ VIEW TOGGLE
 // ============================================================
 
 const btnSingleView = document.getElementById('btnSingleView');
@@ -50,21 +50,21 @@ btnSingleView?.addEventListener('click', () => setViewMode('single'));
 btnScrollView?.addEventListener('click', () => setViewMode('scroll'));
 
 // ============================================================
-// 📄 PAGE ACTIONS
+// ðŸ“„ PAGE ACTIONS
 // ============================================================
 
 document.getElementById('btnAddPage')?.addEventListener('click', addPage);
 document.getElementById('btnDeletePage')?.addEventListener('click', deletePage);
 
 // ============================================================
-// 🎨 ELEMENT ACTIONS
+// ðŸŽ¨ ELEMENT ACTIONS
 // ============================================================
 
 document.getElementById('btnAddSpeech')?.addEventListener('click', addSpeechBox);
 document.getElementById('btnDeletePanel')?.addEventListener('click', deleteSelectedElement);
 
 // ============================================================
-// 🖼️ IMAGE PANEL — Cropper.js
+// ðŸ–¼ï¸ IMAGE PANEL â€” Cropper.js
 // ============================================================
 
 const fileInput = document.getElementById('fileInput');
@@ -74,7 +74,7 @@ document.getElementById('btnApplyCrop')?.addEventListener('click', applyCrop);
 document.getElementById('btnCancelCrop')?.addEventListener('click', cancelCrop);
 
 // ============================================================
-// 📐 LAYER CONTROLS
+// ðŸ“ LAYER CONTROLS
 // ============================================================
 
 document.getElementById('layer-forward')?.addEventListener('click', () => moveLayer('forward'));
@@ -83,7 +83,7 @@ document.getElementById('layer-top')?.addEventListener('click', () => moveLayer(
 document.getElementById('layer-bottom')?.addEventListener('click', () => moveLayer('bottom'));
 
 // ============================================================
-// 💾 PROJECT ACTIONS
+// ðŸ’¾ PROJECT ACTIONS
 // ============================================================
 
 document.getElementById('btnSaveProject')?.addEventListener('click', () => {
@@ -101,7 +101,7 @@ document.getElementById('btnExportPDF')?.addEventListener('click', exportPDF);
 document.getElementById('btnExportImages')?.addEventListener('click', exportImages);
 
 // ============================================================
-// ⚡ UNDO / REDO
+// âš¡ UNDO / REDO
 // ============================================================
 
 import { saveHistoryState } from './state.js';
@@ -155,7 +155,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-// 🔄 PROPERTIES PANEL SYNC
+// ðŸ”„ PROPERTIES PANEL SYNC
 // ============================================================
 
 document.getElementById('panelPropX')?.addEventListener('change', syncPropertiesFromPanel);
@@ -188,7 +188,7 @@ document.getElementById('fontFamilySelect')?.addEventListener('change', syncProp
 document.getElementById('fontSizeSelect')?.addEventListener('change', syncPropertiesFromPanel);
 
 // ============================================================
-// 👁️ PANEL VISIBILITY — Grid & Snapping / Transform / Layer Control context cards
+// ðŸ‘ï¸ PANEL VISIBILITY â€” Grid & Snapping / Transform / Layer Control context cards
 // ============================================================
 
 initPanelVisibility();
@@ -276,7 +276,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // ============================================================
-// 🚀 INITIALIZATION
+// ðŸš€ INITIALIZATION
 // ============================================================
 
 initSettings();
@@ -285,7 +285,7 @@ initFolderImport();
 initUnsavedChangesMonitor();
 
 // ============================================================
-// ⚠️ UNSAVED-CHANGES WARNING — refresh, back/forward, or close
+// âš ï¸ UNSAVED-CHANGES WARNING â€” refresh, back/forward, or close
 // ============================================================
 // Uses the browser's native leave-site prompt, which reliably covers
 // reload (F5/Ctrl+R), back/forward navigation and tab/closing. The
@@ -297,23 +297,96 @@ window.addEventListener('beforeunload', (e) => {
     e.preventDefault();
     e.returnValue = '';
 });
-
 // ============================================================
-// 📱 PWA — Register Service Worker
+// PWA - Service Worker Registration (graceful, with logging)
 // ============================================================
 
-if ('serviceWorker' in navigator) {
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) {
+        console.warn('[PWA] Service Workers not supported - running in browser-only mode.');
+        return;
+    }
+
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
             .then((registration) => {
-                console.log('[PWA] Service Worker registered with scope:', registration.scope);
+                console.log('[PWA] Service Worker registered. Scope:', registration.scope, '| Cache: ', registration.active ? registration.active.scope : 'installing');
+
+                // Surface install/activation progress so failures are diagnosable.
+                registration.addEventListener('updatefound', () => {
+                    const worker = registration.installing;
+                    if (!worker) return;
+                    console.log('[PWA] New service worker installing...');
+                    worker.addEventListener('statechange', () => {
+                        console.log('[PWA] SW state:', worker.state);
+                        if (worker.state === 'activated' && navigator.serviceWorker.controller) {
+                            console.log('[PWA] Update activated - reloading to apply fresh assets.');
+                        }
+                    });
+                });
+
+                // Keep the SW up to date on every subsequent visit.
+                if (navigator.serviceWorker.controller) {
+                    registration.update().catch((err) => console.warn('[PWA] SW update check failed:', err));
+                }
             })
             .catch((error) => {
-                console.log('[PWA] Service Worker registration failed:', error);
+                // Graceful failure: the app still runs online, just without caching.
+                console.warn('[PWA] Service Worker registration failed - app will run online-only:', error);
             });
     });
-} else {
-    console.log('[PWA] Service Workers not supported in this browser.');
 }
 
-console.log('✅ MangaMesh ready — Happy creating!');
+registerServiceWorker();
+
+// ============================================================
+// INSTALL PROMPT - Install App button + iOS fallback
+// ============================================================
+
+let deferredInstallPrompt = null;
+const installBtn = document.getElementById('btnInstallApp');
+
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+
+// Show the Install button on iOS always (native A2HS), otherwise wait for
+// Chrome/Edge beforeinstallprompt (when installability criteria are met).
+if (isIOS && !isStandalone && installBtn) {
+    installBtn.style.display = 'inline-block';
+    installBtn.textContent = 'Add to Home Screen';
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar; we drive the prompt from our own button.
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!isStandalone) installBtn.style.display = 'inline-block';
+    console.log('[PWA] Install prompt is available.');
+});
+
+installBtn?.addEventListener('click', async () => {
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+            console.log('[PWA] User accepted the install prompt.');
+        } else {
+            console.log('[PWA] User dismissed the install prompt.');
+        }
+        deferredInstallPrompt = null;
+        installBtn.style.display = 'none';
+    } else if (isIOS) {
+        // iOS Safari has no install prompt event - guide the user to A2HS.
+        alert('To install MangaMesh on iPhone/iPad:\n\n1) Tap the Share button (square with arrow).\n2) Scroll down and tap "Add to Home Screen".\n3) Tap Add in the top right.');
+    } else {
+        installBtn.style.display = 'none';
+    }
+});
+
+window.addEventListener('appinstalled', () => {
+    console.log('[PWA] App installed.');
+    deferredInstallPrompt = null;
+    if (installBtn) installBtn.style.display = 'none';
+});
+
+console.log('MangaMesh ready - Happy creating!');

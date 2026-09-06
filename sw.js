@@ -1,8 +1,8 @@
-// ============================================================
-// 📦 SERVICE WORKER — MangaMesh PWA
+﻿// ============================================================
+// ðŸ“¦ SERVICE WORKER â€” MangaMesh PWA
 // ============================================================
 
-const CACHE_NAME = 'mangamesh-v26';
+const CACHE_NAME = 'mangamesh-v27';
 
 // Only list files that ACTUALLY EXIST in your project
 const ASSETS = [
@@ -26,6 +26,8 @@ const ASSETS = [
   
   // PWA files
   'manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
   
   // External Libraries (CDN)
   'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js',
@@ -70,16 +72,35 @@ self.addEventListener('activate', (event) => {
     }).then(() => self.clients.claim())
   );
 });
-
 // --- Fetch: Serve from cache, fallback to network ---
+// Navigation requests (page loads & subpath URLs like /mangamesh/) fall
+// back to the cached index.html so deep links work offline and any
+// path-based 404 from a subpath host is absorbed by the app shell.
 self.addEventListener('fetch', (event) => {
+  const request = event.request;
+
+  // HTML navigation requests: network-first (fresh HTML), fall back to cache.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put('index.html', clone));
+          return response;
+        })
+        .catch(() => caches.match('index.html'))
+    );
+    return;
+  }
+
+  // Assets: cache-first, network fallback.
   event.respondWith(
-    caches.match(event.request)
+    caches.match(request)
       .then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }
-        return fetch(event.request)
+        return fetch(request)
           .then((response) => {
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
@@ -87,7 +108,7 @@ self.addEventListener('fetch', (event) => {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME)
               .then((cache) => {
-                cache.put(event.request, responseToCache);
+                cache.put(request, responseToCache);
               });
             return response;
           });

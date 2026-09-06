@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaMesh — Redirecting…</title>
+    <style>
+        body {
+            background: #1e1e24;
+            color: #f5f5f5;
+            font-family: system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            gap: 12px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        .logo span { color: #4a9eff; }
+        a { color: #4a9eff; }
+    </style>
+</head>
+<body>
+    <div class="logo">Manga<span>Mesh</span></div>
+    <p>Loading application…</p>
+    <p style="color:#aaa; font-size:13px;">If you are not redirected automatically,
+        <a href="./">open MangaMesh here</a>.</p>
+
+    <script>
+        // GitHub Pages / subpath-host fallback: any unknown path serves this
+        // page, and we immediately route back to the app shell at ".\". This
+        // prevents the "Cannot GET /<path>/" dead-end on first load.
+        (function () {
+            var base = './';
+            var target = base + 'index.html';
+            try {
+                window.location.replace(target);
+            } catch (err) {
+                window.location.href = target;
+            }
+        })();
+    </script>
+</body>
+</html>
