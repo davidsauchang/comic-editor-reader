@@ -373,4 +373,81 @@
     .folder-drop-inner { padding: 28px 20px; }
     .folder-drop-inner h3 { font-size: 15px; }
     #folderGapInput { width: 70px; }
+
+    /* ================================================================
+       📱 MOBILE UX 2.0 — tabbed dock, auto-collapse, floating action bar
+       ================================================================ */
+
+    /* --- Smooth collapse transitions --- */
+    #sidebar-right {
+        transition: width 0.22s ease, min-width 0.22s ease,
+                    box-shadow 0.22s ease, border-left-color 0.22s ease;
+    }
+    #sidebar-right:has(#toggle-sidebar-right:checked) > :not(.sidebar-toggle-btn) {
+        display: block !important;
+    }
+    /* Bottom dock: animate collapse too (height + the handle row stays) */
+    #sidebar {
+        transition: height 0.22s ease, min-height 0.22s ease, padding 0.22s ease;
+    }
+
+    /* --- Tabbed dock strip (Pages / Insert) --- */
+    .mobile-dock-tabs {
+        display: flex;
+        flex: 0 0 auto;
+        width: 100%;
+        gap: 4px;
+        padding: 4px;
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 12px;
+        box-sizing: border-box;
+    }
+    .mobile-dock-tabs input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+    .mobile-dock-tabs .dock-tab {
+        flex: 1 1 0;
+        text-align: center;
+        font-size: 12.5px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: var(--text-muted);
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 9px;
+        padding: 8px 4px;
+        cursor: pointer;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        user-select: none;
+        touch-action: manipulation;
+    }
+    .mobile-dock-tabs .dock-tab:active { background: rgba(255,255,255,0.08); }
+    /* Active tab = checked radio + sibling label */
+    #sidebar:has(#dockTabPages:checked) label[for="dockTabPages"],
+    #sidebar:has(#dockTabInsert:checked) label[for="dockTabInsert"] {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        box-shadow: 0 3px 10px rgba(74, 158, 255, 0.4);
+    }
+    /* Tab switching: only one section-box shows at a time */
+    #sidebar:has(#dockTabPages:checked) .section-box:has(#fileInput) { display: none !important; }
+    #sidebar:has(#dockTabInsert:checked) .section-box:has(#pageSizeSelect) { display: none !important; }
+
+    /* Compact the bottom dock content now that only one panel shows */
+    #sidebar > .section-box:not(.hidden) { margin: 0; }
+
+    /* --- Auto-hidden properties: right panel edge default --- */
+    /* (auto-collapse/open is driven from JS; keep styling clean) */
+
+    /* --- Floating contextual action bar --- */
+    #floatingActionBar:not(.hidden) {
+        display: flex;
+    }
+    .fab-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 17px;
+    }
+    .fab-btn:active { background: rgba(74, 158, 255, 0.25); }
+    .fab-btn.fab-danger:active { background: rgba(255, 80, 80, 0.28); }
 }

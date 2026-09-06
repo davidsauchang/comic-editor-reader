@@ -23,6 +23,9 @@ let gridBox = null;
 let propertiesBox = null;
 let layerBox = null;
 let selectionObserver = null;
+let fabBar = null;
+
+const MOBILE_MQ = window.matchMedia('(max-width: 768px)');
 
 // ============================================================
 // 🔍 Locate the two cards (via their controls, not :has())
@@ -58,6 +61,61 @@ function elementIsSelected() {
     );
 }
 
+function getSelectedElement() {
+    return document.querySelector(
+        '#canvas-container .comic-panel.selected,' +
+        '#canvas-container .speech-box-container.selected'
+    );
+}
+
+// ============================================================
+// ✈️ FLOATING CONTEXTUAL ACTION BAR (mobile)
+// ============================================================
+// A small pill anchored above the selected element with quick
+// actions (Duplicate / Delete / Layer ▲ / Layer ▼). Shown only on
+// mobile, only while an element is selected, and repositioned on
+// every selection change and canvas scroll.
+
+function getFabBar() {
+    if (fabBar && fabBar.isConnected) return fabBar;
+    fabBar = document.getElementById('floatingActionBar');
+    return fabBar;
+}
+
+function updateFloatingBar() {
+    const bar = getFabBar();
+    if (!bar || !MOBILE_MQ.matches) {
+        if (bar) bar.classList.add('hidden');
+        return;
+    }
+
+    const selected = getSelectedElement();
+    if (!selected) {
+        bar.classList.add('hidden');
+        return;
+    }
+
+    const rect = selected.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) {
+        bar.classList.add('hidden');
+        return;
+    }
+
+    // Take it out of flow hidden → measure → reposition → show.
+    bar.classList.remove('hidden');
+    const barW = bar.offsetWidth;
+    const barH = bar.offsetHeight;
+
+    let left = rect.left + rect.width / 2 - barW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - barW - 8));
+
+    let top = rect.top - barH - 10;
+    top = Math.max(6, top);
+
+    bar.style.left = left + 'px';
+    bar.style.top = top + 'px';
+}
+
 // ============================================================
 // 👁️ VISIBILITY — page-level tool vs. element-level tools
 // ============================================================
@@ -91,6 +149,7 @@ function watchSelectionChanges() {
     selectionObserver = new MutationObserver(() => {
         updateGridVisibility();
         updateElementCardsVisibility();
+        updateFloatingBar();
     });
     selectionObserver.observe(host, {
         subtree: true,
@@ -98,6 +157,9 @@ function watchSelectionChanges() {
         attributes: true,
         attributeFilter: ['class']
     });
+
+    // Reposition the floating bar while the canvas scrolls (it's viewport-fixed).
+    host.addEventListener('scroll', () => updateFloatingBar(), { passive: true });
 }
 
 // ============================================================
@@ -108,4 +170,5 @@ export function initPanelVisibility() {
     watchSelectionChanges();
     updateGridVisibility();
     updateElementCardsVisibility();
+    updateFloatingBar();
 }

@@ -57,6 +57,12 @@
         </label>
 
         <!-- SIDEBAR LEFT CONTAINER -->
+        <div class="mobile-dock-tabs" aria-hidden="false">
+            <input type="radio" name="dockTab" id="dockTabPages" checked>
+            <label for="dockTabPages" class="dock-tab">📄 Pages</label>
+            <input type="radio" name="dockTab" id="dockTabInsert">
+            <label for="dockTabInsert" class="dock-tab">🖼 Insert</label>
+        </div>
         <div class="brand-logo-container">
             <div class="mangamesh-logo">
                 <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -136,6 +142,14 @@
         <!-- CANVAS HOST -->
         <div id="canvas-container">
             <div id="pageCanvas"></div>
+        </div>
+
+        <!-- Floating contextual action bar — shown above the selected element -->
+        <div id="floatingActionBar" class="hidden">
+            <button id="fabDuplicate" class="fab-btn" title="Duplicate">⧉</button>
+            <button id="fabDelete" class="fab-btn fab-danger" title="Delete">🗑</button>
+            <button id="fabLayerUp" class="fab-btn" title="Layer Up">▲</button>
+            <button id="fabLayerDown" class="fab-btn" title="Layer Down">▼</button>
         </div>
     </div>  <!-- ✅ END OF WORKSPACE -->
 

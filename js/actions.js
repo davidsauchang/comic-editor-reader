@@ -70,6 +70,45 @@ export function deleteSelectedElement() {
     renderCanvas();
 }
 
+export function duplicateSelectedElement() {
+    if (state.currentPage === -1) return;
+    const page = state.pages[state.currentPage];
+    let item = null;
+    let kind = null;
+    if (state.currentPanelId) {
+        item = page.panels.find(p => p.id === state.currentPanelId);
+        kind = 'panels';
+    } else if (state.currentSpeechId) {
+        item = page.speechBubbles.find(s => s.id === state.currentSpeechId);
+        kind = 'speechBubbles';
+    }
+    if (!item || !kind) return;
+
+    saveHistoryState();
+
+    // Deep copy so the duplicate is independent (corners/tail included).
+    const copy = JSON.parse(JSON.stringify(item));
+    copy.id = Date.now() + Math.random();
+    copy.left = (copy.left || 0) + 24;
+    copy.top = (copy.top || 0) + 24;
+    copy.zIndex = (item.zIndex || 10) + 2;
+    if (copy.corners) {
+        copy.corners = copy.corners.map((c) => ({ x: c.x + 24, y: c.y + 24 }));
+    }
+
+    page[kind].push(copy);
+
+    // Select the duplicate so the floating bar / properties follow it.
+    if (kind === 'panels') {
+        state.currentPanelId = copy.id;
+        state.currentSpeechId = null;
+    } else {
+        state.currentSpeechId = copy.id;
+        state.currentPanelId = null;
+    }
+    renderCanvas();
+}
+
 // ============================================================
 // 🖼️ IMAGE PANEL — Cropper.js Integration
 // ============================================================

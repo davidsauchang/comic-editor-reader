@@ -223,6 +223,14 @@ export function makeElementInteractable(element, data, type, resizeHandle) {
         element.classList.add('selected');
         openPropertiesPanel(type, data, element);
 
+        // 📱 Mobile UX: selecting an element auto-opens the right properties
+        // panel (checkbox unchecked ⇒ open). Mirrors the auto-collapse that
+        // happens when the user taps the blank canvas.
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            const rightTgl = document.getElementById('toggle-sidebar-right');
+            if (rightTgl && rightTgl.checked) rightTgl.checked = false;
+        }
+
         // Lock Panel: allow selection but block actual dragging/resizing.
         const panelIsLocked = (type === 'panel' && data.isLocked);
 

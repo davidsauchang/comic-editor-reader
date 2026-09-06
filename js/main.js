@@ -4,7 +4,7 @@
 
 import { state, clearAllSelections, initUnsavedChangesMonitor, markAsSaved, isDirty } from './state.js';
 import { renderCanvas, applyZoom, renderSidebar, selectPage } from './canvas.js';
-import { addPage, deletePage, addSpeechBox, deleteSelectedElement, handleImageUpload, applyCrop, cancelCrop, moveLayer } from './actions.js';
+import { addPage, deletePage, addSpeechBox, deleteSelectedElement, duplicateSelectedElement, handleImageUpload, applyCrop, cancelCrop, moveLayer } from './actions.js';
 import { saveProject, loadProject, exportPDF, exportImages } from './export.js';
 import { initSettings } from './settings.js';
 import { syncPropertiesFromPanel } from './interactions.js';
@@ -24,6 +24,13 @@ canvasContainer?.addEventListener('mousedown', (e) => {
         e.target.classList.contains('scroller-page')) {
         clearAllSelections();
         renderCanvas(); // Re-render to remove selection outlines
+
+        // 📱 Mobile UX: tapping the canvas auto-collapses the right panel so
+        // the user instantly gets a full-canvas view without an extra tap.
+        if (window.matchMedia('(max-width: 768px)').matches) {
+            const rightTgl = document.getElementById('toggle-sidebar-right');
+            if (rightTgl && !rightTgl.checked) rightTgl.checked = true;
+        }
     }
 });
 
@@ -81,6 +88,21 @@ document.getElementById('layer-forward')?.addEventListener('click', () => moveLa
 document.getElementById('layer-backward')?.addEventListener('click', () => moveLayer('backward'));
 document.getElementById('layer-top')?.addEventListener('click', () => moveLayer('top'));
 document.getElementById('layer-bottom')?.addEventListener('click', () => moveLayer('bottom'));
+
+// ============================================================
+// 🎈 FLOATING CONTEXTUAL ACTION BAR (mobile quick actions)
+// ============================================================
+
+document.getElementById('fabDuplicate')?.addEventListener('click', () => {
+    duplicateSelectedElement();
+    const bar = document.getElementById('floatingActionBar');
+    if (bar) bar.classList.add('hidden');
+});
+document.getElementById('fabDelete')?.addEventListener('click', () => {
+    deleteSelectedElement();
+});
+document.getElementById('fabLayerUp')?.addEventListener('click', () => moveLayer('forward'));
+document.getElementById('fabLayerDown')?.addEventListener('click', () => moveLayer('backward'));
 
 // ============================================================
 // ðŸ’¾ PROJECT ACTIONS

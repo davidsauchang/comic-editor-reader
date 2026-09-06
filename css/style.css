@@ -608,6 +608,49 @@ body {
 /* Hide utility â€” toggled by JS (e.g. #propertiesPanel) */
 .hidden { display: none !important; }
 
+/* Mobile-only dock tab strip (hidden on desktop; shown ≤768px) */
+.mobile-dock-tabs {
+    display: none;
+}
+
+/* Floating contextual action bar — mobile only */
+#floatingActionBar {
+    position: fixed;
+    z-index: 2100;
+    display: none;   /* enabled + shown only ≤768px (see mobile.css) */
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    border-radius: 14px;
+    background: rgba(28, 28, 36, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    pointer-events: auto;
+}
+
+.fab-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 16px;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.fab-btn:active { background: rgba(74, 158, 255, 0.25); }
+.fab-btn.fab-danger:active { background: rgba(255, 80, 80, 0.28); }
+
 .canvas-page-marker {
     position: absolute;
     top: -24px;
