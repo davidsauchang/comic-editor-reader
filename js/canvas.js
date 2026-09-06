@@ -1,12 +1,12 @@
-// ============================================================
-// 🎨 CANVAS — Rendering Engine for MangaMesh
+﻿// ============================================================
+// ðŸŽ¨ CANVAS â€” Rendering Engine for MangaMesh
 // ============================================================
 
 import { state, els, elsProps, clearAllSelections } from './state.js';
 import { makeElementInteractable, makeTailDraggable, makeCornerDraggable } from './interactions.js';
 
 // ============================================================
-// 📐 RENDER CANVAS
+// ðŸ“ RENDER CANVAS
 // ============================================================
 
 export function renderCanvas() {
@@ -51,7 +51,7 @@ export function renderCanvas() {
         paintPageContents(state.pages[state.currentPage], els.pageCanvas);
         
     } else {
-        // Scroll View — Reverted to original working layout style
+        // Scroll View â€” Reverted to original working layout style
         els.pageCanvas.style.display = 'none';
         els.canvasContainer.classList.add('scroll-mode');
         
@@ -76,13 +76,12 @@ export function renderCanvas() {
             pageDiv.style.position = 'relative';
             pageDiv.style.boxSizing = 'border-box';
             
-            // Matches old code: display inline-block + clean vertical margin block spacing
+            // Matches old code: display inline-block + clean, consistent gap.
+            // Margins are kept small (5px each side) because the scroller uses
+            // CSS zoom (scales layout AND rendering together), so the ~10px
+            // page gap stays proportional at every zoom level.
             pageDiv.style.display = 'inline-block';
-            pageDiv.style.margin = '15px auto 25px auto'; 
-            
-            // Render scaling transforms directly onto the page blocks
-            pageDiv.style.transformOrigin = 'top center';
-            pageDiv.style.transform = `scale(${state.zoom})`;
+            pageDiv.style.margin = '5px 5px';
             
             if (state.gridStyle === 'grid') pageDiv.classList.add('texture-grid');
             if (state.gridStyle === 'dots') pageDiv.classList.add('texture-dots');
@@ -106,13 +105,19 @@ export function renderCanvas() {
             paintPageContents(page, pageDiv);
             scroller.appendChild(pageDiv);
         });
-        
+
+        // CSS `zoom` scales layout AND paint together, so the page spacing
+        // stays visually consistent at every zoom level - no more page
+        // overlap at >100% or giant gaps at <100%.
+        scroller.style.transform = 'none';
+        scroller.style.zoom = state.zoom;
+
         els.canvasContainer.appendChild(scroller);
     }
 }
 
 // ============================================================
-// 🖌️ PAINT PAGE CONTENTS
+// ðŸ–Œï¸ PAINT PAGE CONTENTS
 // ============================================================
 
 export function paintPageContents(page, container) {
@@ -144,7 +149,7 @@ export function paintPageContents(page, container) {
     const minY = Math.min(...ys), maxY = Math.max(...ys);
     const w = maxX - minX, h = maxY - minY;
 
-    // ✅ FIX: Ensure div captures mouse events
+    // âœ… FIX: Ensure div captures mouse events
     div.style.cssText = `left: ${minX}px; top: ${minY}px; width: ${w}px; height: ${h}px; z-index: ${box.zIndex || 10}; position: absolute; overflow: visible; pointer-events: auto; cursor: move;`;
     
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -250,7 +255,7 @@ export function paintPageContents(page, container) {
             // === FIX #5: TITLE STYLE ===
             if (box.style === 'title') {
                 div.classList.add('transparent-title-style');
-                // Title text respects the user's Font Color. Default to white —
+                // Title text respects the user's Font Color. Default to white â€”
                 // black would vanish against the hardcoded black outline. The
                 // setProperty(..., 'important') matters: a plain .style.color
                 // assignment below would inherit the important priority and
@@ -270,7 +275,7 @@ export function paintPageContents(page, container) {
 
             // === FIX #4: THOUGHT BUBBLES ===
             } else if (box.style === 'thought') {
-                // THOUGHT BUBBLE — Cloud with trailing circles
+                // THOUGHT BUBBLE â€” Cloud with trailing circles
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 svg.setAttribute("class", "speech-svg");
                 svg.setAttribute("width", maxX - minX);
@@ -389,7 +394,7 @@ export function paintPageContents(page, container) {
 }
 
 // ============================================================
-// 🎯 GENERATE SPEECH PATH
+// ðŸŽ¯ GENERATE SPEECH PATH
 // ============================================================
 
 function generateSpeechPath(w, h, tailX, tailY) {
@@ -416,13 +421,13 @@ function generateSpeechPath(w, h, tailX, tailY) {
 }
 
 // ============================================================
-// 🔍 APPLY ZOOM
+// ðŸ” APPLY ZOOM
 // ============================================================
 
 export function applyZoom(val) {
     const normalizedZoom = Math.round(val * 100) / 100;
     state.zoom = normalizedZoom;
-    
+
     if (state.viewMode === 'single') {
         const target = els.pageCanvas;
         if (target) {
@@ -430,13 +435,13 @@ export function applyZoom(val) {
             target.style.transform = `scale(${normalizedZoom})`;
         }
     } else {
-        // Target the parent wrapper instead of individual pages
-        // Target the parent wrapper instead of individual pages
-const scroller = els.canvasContainer.querySelector('.pages-scroller');
-if (scroller) {
-    scroller.style.transformOrigin = 'top center';
-    scroller.style.transform = `scale(${normalizedZoom})`;
-}
+        // Zoom the whole scroller (layout + paint) so pages keep a consistent
+        // ~10px gap at every zoom - no overlap at >100%, no huge gaps at <100%.
+        const scroller = els.canvasContainer.querySelector('.pages-scroller');
+        if (scroller) {
+            scroller.style.transform = 'none';
+            scroller.style.zoom = normalizedZoom;
+        }
     }
 
     const zoomSelect = document.getElementById('zoomSelect');
@@ -446,7 +451,7 @@ if (scroller) {
 }
 
 // ============================================================
-// 📋 RENDER SIDEBAR
+// ðŸ“‹ RENDER SIDEBAR
 // ============================================================
 
 export function renderSidebar() {
@@ -461,7 +466,7 @@ export function renderSidebar() {
 }
 
 // ============================================================
-// 📄 SELECT PAGE
+// ðŸ“„ SELECT PAGE
 // ============================================================
 
 export function selectPage(index) {

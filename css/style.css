@@ -1,5 +1,5 @@
-/* ==========================================================================
-   COMIC LAYOUT CREATOR — STYLESHEET (CLEANED & UNIFIED)
+﻿/* ==========================================================================
+   COMIC LAYOUT CREATOR â€” STYLESHEET (CLEANED & UNIFIED)
    ==========================================================================
    Deduplicated and reorganized. Original preserved as style.css.backup.
    ========================================================================== */
@@ -42,7 +42,7 @@ body {
 }
 
 /* ==========================================================================
-   LAYOUT SHELL — SIDEBARS + WORKSPACE
+   LAYOUT SHELL â€” SIDEBARS + WORKSPACE
    ========================================================================== */
 #sidebar,
 #sidebar-right {
@@ -415,17 +415,17 @@ body {
 
 #pageCanvas { margin-top: 10px; }
 
-/* Scroll view — stacked page scroller */
+/* Scroll view - flowing page stream. Zoom is handled with CSS `zoom` on the
+   scroller so layout + paint scale together: the ~10px page gap stays
+   consistent at every zoom level (no overlap at >100%, no huge gaps at <100%). */
 .pages-scroller {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    align-items: center;
+    display: block;
+    text-align: center;
     padding-top: 10px;
     padding-bottom: 80px;
 }
 
-.scroller-page { flex-shrink: 0; }
+.scroller-page { margin: 5px; }
 
 .scroller-page.active-page-view {
     outline: 3px solid #00bcff;
@@ -509,7 +509,7 @@ body {
     overflow: visible !important;
 }
 
-/* Transparent heading style — muted bounds until selected */
+/* Transparent heading style â€” muted bounds until selected */
 .speech-box-container.transparent-title-style {
     background: transparent !important;
     border: 1px dashed rgba(255, 255, 255, 0.15) !important;
@@ -605,7 +605,7 @@ body {
 /* ==========================================================================
    CORE UTILITIES
    ========================================================================== */
-/* Hide utility — toggled by JS (e.g. #propertiesPanel) */
+/* Hide utility â€” toggled by JS (e.g. #propertiesPanel) */
 .hidden { display: none !important; }
 
 .canvas-page-marker {
@@ -745,7 +745,7 @@ body {
     padding-right: 30px !important;
 }
 
-/* Rotation slider — stack label + controls vertically */
+/* Rotation slider â€” stack label + controls vertically */
 #propertiesPanel .property-group { margin-bottom: 12px; }
 
 #propertiesPanel .property-group:has(#propRotation) {
@@ -860,7 +860,7 @@ body {
     color: var(--text-light);
 }
 
-/* Anchor the tabs to their sidebar edges — they pop outward past the border */
+/* Anchor the tabs to their sidebar edges â€” they pop outward past the border */
 .tab-left {
     right: -25px;
     border-left: none;
@@ -1088,7 +1088,7 @@ body {
     }
 }
     /* ==========================================================================
-   📁 FOLDER IMPORT — Drop Overlay + Layout Modal
+   ðŸ“ FOLDER IMPORT â€” Drop Overlay + Layout Modal
    ========================================================================== */
 #folderDropOverlay {
     position: fixed;
